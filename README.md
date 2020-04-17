@@ -20,6 +20,12 @@ Actual software release offers graphical user interface with basic functionality
  - DICOM is handled with [GDCM](https://github.com/malaterre/GDCM) (>= 2.6.0) and [VTK-DICOM](https://github.com/dgobbi/vtk-dicom/) (>= 0.8.9)
  - Image processing and tracking algorithms are implemented using [OpenCV](https://opencv.org/) (>= 3.0)
 
+#### How to start
+ - Download and unzip the folder 3D-XGuide
+ - Run 3D-XGuide.exe to start the standalone application 
+ - Download und unzip the folder PHANTOM to get the test data 
+ - Refer to GettingStarted or go to Help menu within the standalone application for short user manual 
+
 #### Citation
 If you use any part of this repository, please cite:
 
@@ -28,6 +34,8 @@ If you use any part of this repository, please cite:
 #### Acknowledgements
 3D-XGuide was developed within the [ExCaVI](https://www.uniklinik-ulm.de/innere-medizin-ii/experimentelle-forschung/experimental-cardiovascular-imaging-excavi.html) group of Ulm University and Ulm University Medical Center. 
 
-<img src="logoExCavi.png" width="150">
-<img src="logo_30_sRGB.jpg" width="250">
-<img src="logo_klinik.png" width="150">
+<p float="left">
+<a href='https://www.uniklinik-ulm.de/innere-medizin-ii/experimentelle-forschung/experimental-cardiovascular-imaging-excavi.html'><img src="logoExCavi.png" width="150"></a>
+<a href='http://www.uni-ulm.de/en/'><img src="logo_30_sRGB.jpg" width="250" hspace="50"/></a>
+<a href='https://www.uniklinik-ulm.de/innere-medizin-ii.html'><img src="logo_klinik.png" width="150"></a>
+</p>
