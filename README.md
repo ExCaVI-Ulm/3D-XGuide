@@ -11,13 +11,13 @@ Actual software release offers graphical user interface with basic functionality
  - Implements easily extendable data processing pipeline concept
 
 #### Build system
- - The project and module configuration/generation is performed through [CMake](https://cmake.org/) (>= 3.16.0)
+ - The project and module configuration/generation is performed through [CMake](https://cmake.org/) (>= 3.16.2)
  - 3D-XGuide has been compiled with Visual Studio 2015
  
  #### Dependencies
  - [VTK](https://www.vtk.org/) (>= 8.2.0) visualization pipeline is used as a core of framework
- - The GUI is based on [Qt](https://www.qt.io/) (>= 5.6)
- - DICOM is handled with [GDCM](https://github.com/malaterre/GDCM) (>= 2.6) and [VTK-DICOM](https://github.com/dgobbi/vtk-dicom/) (>= 0.8.9)
+ - The GUI is based on [Qt](https://www.qt.io/) (>= 5.6.0)
+ - DICOM is handled with [GDCM](https://github.com/malaterre/GDCM) (>= 2.6.0) and [VTK-DICOM](https://github.com/dgobbi/vtk-dicom/) (>= 0.8.9)
  - Image processing and tracking algorithms are implemented using [OpenCV](https://opencv.org/) (>= 3.0)
 
 #### Citation
