@@ -15,13 +15,13 @@ Actual software release offers graphical user interface with basic functionality
  - 3D-XGuide has been compiled with Visual Studio 2015
  
  #### Dependencies
- - [VTK](https://www.vtk.org/) (supported = 8.2) visualization pipeline is used as a core of framework
- - The GUI is based on [Qt](https://www.qt.io/) (supported = 5.6)
- - DICOM is handled with [GDCM](http://gdcm.sourceforge.net/) (supported = 2.6) and [VTK-DICOM](http://dgobbi.github.io/vtk-dicom/) (supported = 0.8.9)
- - [OpenCV](https://opencv.org/) (supported >= 3.0)
+ - [VTK](https://www.vtk.org/) (>= 8.2.0) visualization pipeline is used as a core of framework
+ - The GUI is based on [Qt](https://www.qt.io/) (>= 5.6)
+ - DICOM is handled with [GDCM](https://github.com/malaterre/GDCM) (>= 2.6) and [VTK-DICOM](https://github.com/dgobbi/vtk-dicom/) (>= 0.8.9)
+ - Image processing and tracking algorithms are implemented using [OpenCV](https://opencv.org/) (>= 3.0)
 
 #### Citation
-If you use any part of this repository for your research, please cite:
+If you use any part of this repository, please cite:
 
 [Vernikouskaya I, Bertsche D, Rottbauer W, Rasche V (2019) Rapid Prototyping Framework for Image-Guided Interventions. Int J Comput Assist Radiol Surg 14(Suppl 1): S31-S32.](https://doi.org/10.1007/s11548-019-01969-3)
 
