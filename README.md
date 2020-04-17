@@ -32,7 +32,7 @@ If you use any part of this repository, please cite:
 [Vernikouskaya I, Bertsche D, Rottbauer W, Rasche V (2019) Rapid Prototyping Framework for Image-Guided Interventions. Int J Comput Assist Radiol Surg 14(Suppl 1): S31-S32.](https://doi.org/10.1007/s11548-019-01969-3)
 
 #### Acknowledgements
-3D-XGuide was developed within the [ExCaVI](https://www.uniklinik-ulm.de/innere-medizin-ii/experimentelle-forschung/experimental-cardiovascular-imaging-excavi.html) group of Ulm University and Ulm University Medical Center. 
+3D-XGuide was developed within the [ExCaVI](https://www.uniklinik-ulm.de/innere-medizin-ii/experimentelle-forschung/experimental-cardiovascular-imaging-excavi/image-guided-interventions.html) group of Ulm University and Ulm University Medical Center. 
 
 <p float="left">
 <a href='https://www.uniklinik-ulm.de/innere-medizin-ii/experimentelle-forschung/experimental-cardiovascular-imaging-excavi.html'><img src="logoExCavi.png" width="150"></a>
