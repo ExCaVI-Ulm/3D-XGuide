@@ -34,10 +34,10 @@
 
 **Keyboard shortcuts in 3D view:**
 
-'x' = side view
-'y' = top-down view
-'z' = front view
-'r' = reset camera (ensure that whole scene is visible)
+'x' = side view  
+'y' = top-down view  
+'z' = front view  
+'r' = reset camera (ensure that whole scene is visible)  
 
 
 ## Marker points reconstruction
