@@ -18,6 +18,10 @@
 #include <gdcmTag.h>
 #include <gdcmStringFilter.h>
 
+#include <gdcmDirectory.h>
+#include <gdcmIPPSorter.h>
+#include <vtkStringArray.h>
+
 #include <stdlib.h>
 
 using namespace std;
@@ -168,6 +172,7 @@ void DICOMVisualizer::rescaleCTVolume(string theFilename)
 		if (slice_spacing == 0.0)
 		{
 			slice_spacing = slice_thickness;
+			//TODO: replace slice_thickness with [Slice_location(last) - Slice_location(first)] / SliceExtent
 
 		}
 	}
@@ -191,13 +196,51 @@ void DICOMVisualizer::setSliceSpacing(double spacing)
 }
 
 
-void DICOMVisualizer::setCTInputFile(string theFilename, int orientation)
+void DICOMVisualizer::setCTInputFile(string theFilename, string theFoldername, int orientation)
 {
 	CTsequence = true;
 
-	theDICOMReader->SetFileName(theFilename.c_str());
+	gdcm::Directory d;
+	d.Load(theFoldername.c_str(), false);
+
+	const std::vector<std::string> & filenames = d.GetFilenames();
+
+	gdcm::IPPSorter s;
+
+	s.SetComputeZSpacing(true);
+
+	s.SetZSpacingTolerance(1e-3);
+
+	bool b = s.Sort(filenames);
+
+	if (!b)
+	{
+		std::cerr << "DICOM volume contains more than one image series: " << "please choose another DICOM series" << std::endl;
+		return;
+	}
+
+
+	const std::vector<std::string> & sorted = s.GetFilenames();
+
+
+	vtkStringArray *files = vtkStringArray::New();
+
+	std::vector< std::string >::const_iterator it = sorted.begin();
+
+	for (; it != sorted.end(); ++it)
+	{
+		const std::string &f = *it;
+		files->InsertNextValue(f.c_str());
+	}
+
+	if (sorted.size() > 1)		
+		theDICOMReader->SetFileNames(files);
+	else
+		theDICOMReader->SetFileName(theFilename.c_str());
+
+
 	theDICOMReader->Update();
-	theDICOMReader->Print(cout);
+	//theDICOMReader->Print(cout);
 
 	rescaleCTVolume(theFilename); // get the slice_spacing/slice thickness from DICOM header
 	// we have artificially rescale CT image, thus set new data spacing and new origin for z-coordinate 

@@ -113,6 +113,7 @@ private:
 	/*bool MRsequence;*/
 	int MeshOrientation;
 	string reloadFile;
+	string reloadDir;
 	vtkSmartPointer< vtkDistanceWidget > distanceWidget;
 	int frameGrabberNumber;
 

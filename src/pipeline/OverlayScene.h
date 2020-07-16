@@ -127,7 +127,7 @@ public:
 	void loadUserMatrix(unsigned int streamNumber, const char* filename);/// Set the assembly's UserMatrix from the given file.
 
 	void SetMRVisualizer(string file);
-	void SetCTVisualizer(string file, int meshOrientation);
+	void SetCTVisualizer(string file, string folder, int meshOrientation);
 	DICOMVisualizer* GetMRVisualizer();
 	//XRayViewer* GetXRayViewer() {return theXRayViewer};
 	void SetRenderer3D(vtkRenderer* renderer);

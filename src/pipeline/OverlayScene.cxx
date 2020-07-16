@@ -246,11 +246,11 @@ void OverlayScene::SetMRVisualizer(string file)
 	
 }
 
-void OverlayScene::SetCTVisualizer(string file, int meshOrientation)
+void OverlayScene::SetCTVisualizer(string file, string folder, int meshOrientation)
 {
 	orientation = meshOrientation;
 	theMRVisualizer->SetDICOMRenderers2D(renderers2D);
-	theMRVisualizer->setCTInputFile(file, orientation);
+	theMRVisualizer->setCTInputFile(file, folder, orientation);
 
 	renderer3D->ResetCamera();
 	RenderAll();
@@ -3580,7 +3580,7 @@ void OverlayScene::loadDefaultMeshPosition(MESH defaultOrientation)
 
 	case MR_PHILIPS:
 		/// here is the case with converted XML
-		t->RotateX(180); // for 3T MRI
+		t->RotateX(180);
 		break;
 
 	case CT_ITK:		
@@ -3618,7 +3618,7 @@ void OverlayScene::addOverlayMesh(string file)
 	vtkPolyDataReader* meshReader = vtkPolyDataReader::New();
 	theMeshReaders.push_back(meshReader);
 	meshReader->SetFileName(file.c_str());
-	meshReader->Print(cout);
+	//meshReader->Print(cout);
 	meshReader->Update();
 	vtkPolyData* data = meshReader->GetOutput();
 

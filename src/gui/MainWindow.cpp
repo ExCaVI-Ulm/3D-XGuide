@@ -268,11 +268,14 @@ void MainWindow::on_actionLoad3DMRIDatasetPHILIPS_triggered()
 	QString fileFormats("Image files (*.dcm);; All files (*)");
 	QString FileName = QFileDialog::getOpenFileName(this,
 		"Select 3D MRI Dataset", "b:/NAVIGATION/SVT ABLATION/", fileFormats);
+	QDir d = QFileInfo(FileName).absoluteDir();
+	QString absolute = d.absolutePath();
 	if (FileName.isNull()) return;
 
 	MeshOrientation = OverlayScene::MR_PHILIPS;
-	theOverlayScene->SetCTVisualizer(qPrintable(FileName), MeshOrientation);
+	theOverlayScene->SetCTVisualizer(qPrintable(FileName), qPrintable(absolute), MeshOrientation);
 	reloadFile = qPrintable(FileName);
+	reloadDir = qPrintable(absolute);
 	meshesDialog->activateAddMeshButton(true);
 	//theOverlayScene->setMRInputFileForMesh(MeshOrientation);
 
@@ -291,7 +294,7 @@ void MainWindow::on_actionSet_slice_spacing_manually_triggered()
 	if (!ok) return;
 
 	theOverlayScene->GetMRVisualizer()->setSliceSpacing(value);
-	theOverlayScene->SetCTVisualizer(reloadFile, MeshOrientation);
+	theOverlayScene->SetCTVisualizer(reloadFile, reloadDir, MeshOrientation);
 	updateGUI();
 
 }
@@ -299,14 +302,19 @@ void MainWindow::on_actionSet_slice_spacing_manually_triggered()
 
 void MainWindow::on_actionLoad3DCTDatasetPHILIPS_triggered()
 {
+
 	QString fileFormats("Image files (*.dcm);; All files (*)");
 	QString FileName = QFileDialog::getOpenFileName(this,
 		"Select 3D CT Dataset", "b:/NAVIGATION/data/TAVI", fileFormats);
+	QDir d = QFileInfo(FileName).absoluteDir();
+	QString absolute = d.absolutePath();
+
 	if (FileName.isNull()) return;
 	MeshOrientation = OverlayScene::CT_PHILIPS;
-	theOverlayScene->SetCTVisualizer(qPrintable(FileName), MeshOrientation);
+	theOverlayScene->SetCTVisualizer(qPrintable(FileName), qPrintable(absolute), MeshOrientation);
 
 	reloadFile =  qPrintable(FileName);
+	reloadDir = qPrintable(absolute);
 	meshesDialog->activateAddMeshButton(true);
 	//theOverlayScene->setMRInputFileForMesh(MeshOrientation);
 
@@ -318,10 +326,14 @@ void MainWindow::on_actionLoad3DCTDatasetITK_triggered()
 	QString fileFormats("Image files (*.dcm);; All files (*)");
 	QString FileName = QFileDialog::getOpenFileName(this,
 		"Select 3D CT Dataset", "b:/NAVIGATION/data/TAVI", fileFormats);
+	QDir d = QFileInfo(FileName).absoluteDir();
+	QString absolute = d.absolutePath();
 	if (FileName.isNull()) return;
 	MeshOrientation = OverlayScene::CT_ITK;
-	theOverlayScene->SetCTVisualizer(qPrintable(FileName), MeshOrientation);
+	theOverlayScene->SetCTVisualizer(qPrintable(FileName), qPrintable(absolute), MeshOrientation);
+
 	reloadFile = qPrintable(FileName);
+	reloadDir = qPrintable(absolute);
 
 	meshesDialog->activateAddMeshButton(true);
 	//theOverlayScene->setMRInputFileForMesh(MeshOrientation);
@@ -726,6 +738,13 @@ void MainWindow::loadScene(const char* file)
 	
 	QString MRVolumeFile = settings.value("MR_VOLUME").toString();
 	string MRVolumeFileString = qPrintable(MRVolumeFile);
+
+	QDir d = QFileInfo(MRVolumeFile).absoluteDir();
+	QString absoluteDir = d.absolutePath();
+	string MRVolumeDirString = qPrintable(absoluteDir);
+
+
+
 	if (MRVolumeFile.startsWith(".")) {
 		MRVolumeFileString = qPrintable(dir.absoluteFilePath(MRVolumeFile));
 	}
@@ -735,7 +754,7 @@ void MainWindow::loadScene(const char* file)
 		switch (orientation)
 		{
 		case 0:
-			theOverlayScene->SetCTVisualizer(MRVolumeFileString, orientation);
+			theOverlayScene->SetCTVisualizer(MRVolumeFileString, MRVolumeDirString, orientation);
 			reloadFile = MRVolumeFileString;
 			MeshOrientation = 0;
 			break;
@@ -746,12 +765,12 @@ void MainWindow::loadScene(const char* file)
 			MeshOrientation = 1;
 			break;
 		case 2:
-			theOverlayScene->SetCTVisualizer(MRVolumeFileString, orientation);
+			theOverlayScene->SetCTVisualizer(MRVolumeFileString, MRVolumeDirString, orientation);
 			reloadFile = MRVolumeFileString;
 			MeshOrientation = 2;
 			break;
 		case 3:
-			theOverlayScene->SetCTVisualizer(MRVolumeFileString, orientation);
+			theOverlayScene->SetCTVisualizer(MRVolumeFileString, MRVolumeDirString, orientation);
 			reloadFile = MRVolumeFileString;
 			MeshOrientation = 3;
 			break;
