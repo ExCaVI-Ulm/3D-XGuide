@@ -5,10 +5,6 @@
 struct SystemGeometryDefinitions {
 	static int CAMERA_SIZE_X; /// original width of the xray image (Live Signal format = monitor format)
 	static int CAMERA_SIZE_Y; /// original height of the xray image
-	static int TARGET_SIZE_X; /// width of the xray image (it will be scaled if necessary)
-	static int TARGET_SIZE_Y; /// height of the xray image (it will be scaled if necessary)
-	static int IMAGE_SIZE_X; /// displayed width of the xray image (used to position the image plane)
-	static int IMAGE_SIZE_Y; /// displayed height of the xray image (used to position the image plane)
 
 	static int LAPTOP_SIZE_X;
 	static int LAPTOP_SIZE_Y;

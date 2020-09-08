@@ -2278,7 +2278,7 @@ void OverlayScene::transformFromWorldToImageCoordinates(unsigned int streamNumbe
 }
 
 void OverlayScene::setBiplaneGeometry(unsigned int streamNumber, int SID, int sourcePatDist, double primAngle, double secAngle,
-	int lateralPos, int longitudinalPos, int verticalPos, double mmPerPxl)
+	int lateralPos, int longitudinalPos, int verticalPos, double mmPerPxl, int imageSizeX, int imageSizeY)
 {
 	//printf("setting geometry with first SID: %.0f and second SID: %.0f\n", SID[0], SID[1]);
 	/* compute geometry */
@@ -2295,8 +2295,8 @@ void OverlayScene::setBiplaneGeometry(unsigned int streamNumber, int SID, int so
 	}
 
 	geometry->setImageDimension(
-		SystemGeometryDefinitions::IMAGE_SIZE_X,
-		SystemGeometryDefinitions::IMAGE_SIZE_Y
+		imageSizeX, 
+		imageSizeY
 		);
 	geometry->setIsFramegrabber(isFramegrabber);
 	geometry->setTablePosition((double)lateralPos, (double)longitudinalPos, (double)verticalPos);
@@ -2489,13 +2489,13 @@ void OverlayScene::setupGeometryFromFramegrabber(int index)
 }
 
 
-void OverlayScene::setMainGeometryByDICOM(int SID, int sourcePatDist, double primAngle, double secAngle, int lateralPos, int longitudinalPos, int verticalPos, double mmPerPixel)
+void OverlayScene::setMainGeometryByDICOM(int SID, int sourcePatDist, double primAngle, double secAngle, int lateralPos, int longitudinalPos, int verticalPos, double mmPerPixel, int imageSizeX, int imageSizeY)
 {
 
 	theBiplaneGeometry.mainSystem.setIsFramegrabber(isFramegrabber);
 	theBiplaneGeometry.mainSystem.setImageDimension(
-		SystemGeometryDefinitions::IMAGE_SIZE_X,
-		SystemGeometryDefinitions::IMAGE_SIZE_Y
+		imageSizeX,
+		imageSizeY
 		);
 
 	double angles[2] = { primAngle, secAngle};
@@ -3104,10 +3104,10 @@ void OverlayScene::showFrame(int index, int frame)
 
 void OverlayScene::setMainXRAYInputToFile(const char* file)
 {
-	int SID, sourcePatDist;
+	int SID, sourcePatDist, imageSizeX, imageSizeY;
 	double primAngle, secAngle, mmPerPixel;
 	int lateralPos, longitudinalPos, verticalPos;
-	bool ok[8];
+	bool ok[10];
 
 
 	readerMainXRAY = XRAYReader::New();
@@ -3121,8 +3121,8 @@ void OverlayScene::setMainXRAYInputToFile(const char* file)
 	theMotionCorrections->SetInputConnection(resliceMainXRAY->GetOutputPort(0));
 	actorMainXRAY->GetMapper()->SetInputConnection(theMotionCorrections->GetOutputPort());
 
-	this->getDicomGeometryValues(SID, sourcePatDist, primAngle, secAngle, lateralPos, longitudinalPos, verticalPos, mmPerPixel, ok);
-	setMainGeometryByDICOM(SID, sourcePatDist, primAngle, secAngle, lateralPos, longitudinalPos, verticalPos, mmPerPixel);
+	this->getDicomGeometryValues(SID, sourcePatDist, primAngle, secAngle, lateralPos, longitudinalPos, verticalPos, mmPerPixel, imageSizeX, imageSizeY, ok);
+	setMainGeometryByDICOM(SID, sourcePatDist, primAngle, secAngle, lateralPos, longitudinalPos, verticalPos, mmPerPixel, imageSizeX, imageSizeY);
 
 	//rendererMainXRAY->ResetCamera();
 	//renWinMainXRAY->Render();
@@ -3379,10 +3379,10 @@ void OverlayScene::setInputToFile(const char* file, int streamNumber)
 
 	theXRAYReaders[streamNumber]->Delete();
 
-	int SID, sourcePatDist;
+	int SID, sourcePatDist, imageSizeX, imageSizeY;
 	double primAngle, secAngle, mmPerPixel;
 	int lateralPos, longitudinalPos, verticalPos;
-	bool ok[8];
+	bool ok[10];
 
 	XRAYReader* readerXRAY = XRAYReader::New();
 	readerXRAY->setInputFile(file);
@@ -3396,7 +3396,7 @@ void OverlayScene::setInputToFile(const char* file, int streamNumber)
 	theXRAYActors3D[streamNumber]->GetMapper()->SetInputConnection(theXRAYReslicers[streamNumber]->GetOutputPort());
 	theXRAYReslicers[streamNumber]->SetResliceAxesOrigin(0.0, 0.0, 0.0); // to display the first frame, even if there is only one image in a stream
 
-	this->getDicomReferenceGeometryValues(streamNumber, SID, sourcePatDist, primAngle, secAngle, lateralPos, longitudinalPos, verticalPos, mmPerPixel, ok);
+	this->getDicomReferenceGeometryValues(streamNumber, SID, sourcePatDist, primAngle, secAngle, lateralPos, longitudinalPos, verticalPos, mmPerPixel, imageSizeX, imageSizeY, ok);
 	// berechnung fehlt!!!!!!!!!!!!!!!!!
 	if (!alreadyConstructedPipelineDICOM[streamNumber]) {
 
@@ -3412,7 +3412,7 @@ void OverlayScene::setInputToFile(const char* file, int streamNumber)
 
 		}
 	}
-	setBiplaneGeometry(streamNumber, SID, sourcePatDist, primAngle, secAngle, lateralPos, longitudinalPos, verticalPos, mmPerPixel); 
+	setBiplaneGeometry(streamNumber, SID, sourcePatDist, primAngle, secAngle, lateralPos, longitudinalPos, verticalPos, mmPerPixel, imageSizeX, imageSizeY);
 
 	renderer3D->ResetCamera();
 	renWin3D->Render();
@@ -3420,7 +3420,7 @@ void OverlayScene::setInputToFile(const char* file, int streamNumber)
 }
 
 void OverlayScene::getDicomReferenceGeometryValues(int streamNumber, int& SID, int& sourcePatDist, double& primAngle, double& secAngle, 
-	int& lateralPos, int& longitudinalPos, int& verticalPos, double& mmPerPixel, bool ok[8])
+	int& lateralPos, int& longitudinalPos, int& verticalPos, double& mmPerPixel, int& imageSizeX, int& imageSizeY, bool ok[10])
 {
 	SID = theXRAYReaders[streamNumber]->GetSID(&ok[0]);
 	sourcePatDist = theXRAYReaders[streamNumber]->GetSourcePatientDistance(&ok[1]);
@@ -3430,11 +3430,13 @@ void OverlayScene::getDicomReferenceGeometryValues(int streamNumber, int& SID, i
 	longitudinalPos = theXRAYReaders[streamNumber]->GetTableTopLongitudinalPosition(&ok[5]);
 	verticalPos = theXRAYReaders[streamNumber]->GetTableTopVerticalPosition(&ok[6]);
 	mmPerPixel = theXRAYReaders[streamNumber]->GetMillimeterPerPixelScaling(&ok[7]);
+	imageSizeX = theXRAYReaders[streamNumber]->GetImageSizeX(&ok[8]);
+	imageSizeY = theXRAYReaders[streamNumber]->GetImageSizeY(&ok[9]);
 }
 
 
 void OverlayScene::getDicomGeometryValues(int& SID, int& sourcePatDist, double& primAngle, double& secAngle,
-	int& lateralPos, int& longitudinalPos, int& verticalPos, double& mmPerPixel, bool ok[8])
+	int& lateralPos, int& longitudinalPos, int& verticalPos, double& mmPerPixel, int& imageSizeX, int&imageSizeY, bool ok[10])
 {
 	SID = readerMainXRAY->GetSID(&ok[0]);	
 	sourcePatDist = readerMainXRAY->GetSourcePatientDistance(&ok[1]);
@@ -3444,7 +3446,8 @@ void OverlayScene::getDicomGeometryValues(int& SID, int& sourcePatDist, double& 
 	longitudinalPos = readerMainXRAY->GetTableTopLongitudinalPosition(&ok[5]);
 	verticalPos = readerMainXRAY->GetTableTopVerticalPosition(&ok[6]);
 	mmPerPixel = readerMainXRAY->GetMillimeterPerPixelScaling(&ok[7]);
-
+	imageSizeX = readerMainXRAY->GetImageSizeX(&ok[8]);
+	imageSizeY = readerMainXRAY->GetImageSizeY(&ok[9]);
 }
 
 

@@ -96,7 +96,16 @@ DICOMVisualizer::~DICOMVisualizer()
 
 const char* DICOMVisualizer::getInputFile() const
 {
-	return theDICOMReader->GetFileName();
+	const char* filename = theDICOMReader->GetFileName();
+	
+	if (filename == NULL)
+	{
+		vtkStringArray *filenames = theDICOMReader->GetFileNames();
+		filename = filenames->GetValue(0).c_str();
+
+	}
+
+	return filename;
 }
 
 
@@ -210,6 +219,7 @@ void DICOMVisualizer::setCTInputFile(string theFilename, string theFoldername, i
 	s.SetComputeZSpacing(true);
 
 	s.SetZSpacingTolerance(1e-3);
+	//std::cout << "z-spacing" << s.GetZSpacing() << std::endl;
 
 	bool b = s.Sort(filenames);
 

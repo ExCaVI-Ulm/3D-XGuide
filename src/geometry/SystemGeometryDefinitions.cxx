@@ -38,14 +38,6 @@ int SystemGeometryDefinitions::TABLE_POSITION_X = 0; // lat.
 int SystemGeometryDefinitions::TABLE_POSITION_Y = 0; // long.
 int SystemGeometryDefinitions::TABLE_POSITION_Z = 0; //vert. = höhe
 
-// target size is set to keep the original ratio
-int SystemGeometryDefinitions::TARGET_SIZE_X = 512;
-int SystemGeometryDefinitions::TARGET_SIZE_Y = 512;
-
-// X-ray image size on the image plane (this is needed for positioning the X-ray plane)
-int SystemGeometryDefinitions::IMAGE_SIZE_X = 512;
-int SystemGeometryDefinitions::IMAGE_SIZE_Y = 512;
-
 int SystemGeometryDefinitions::FIELD_DISTANCE = 25;
 double SystemGeometryDefinitions::DETECTOR_SIZE = 174.98;	//174.98 mm - Detector size at FD = 25 cm;
 //double SystemGeometryDefinitions::DETECTOR_SIZE = 132.902;	//132.902 mm - Detector size at FD = 19 cm;

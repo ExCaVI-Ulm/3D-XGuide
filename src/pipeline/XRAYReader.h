@@ -45,6 +45,8 @@ public:
 	double GetTableTopVerticalPosition(bool* valid);
 	double GetTableTopLongitudinalPosition(bool* valid);
 	double GetTableTopLateralPosition(bool* valid);
+	int GetImageSizeX(bool* valid);
+	int GetImageSizeY(bool* valid);
 
 	void ReadGeometryFramegrabber(double& primAngleRead, double& secAngleRead, int& longRead, int& latRead, int& HoeheRead, int& SIDRead, double& mmPerPxlRead, int& FDRead, int& SODRead);
 	void ReadGeometryFramegrabberAngle(double& primAngleRead, double& secAngleRead);

@@ -543,7 +543,7 @@ void MainWindow::saveScene(const char* file)
 	/*settings.setValue("MR_INPUT_YES", theOverlayScene->getMRInputFileForMesh());*/
 	settings.setValue("MESH_ORIENTATION", MeshOrientation);
 	settings.setValue("MR_VOLUME", theOverlayScene->GetMRVisualizer()->getInputFile());
-	
+
 	OverlayScene::MR_ITK;
 
 	QString save = file;
@@ -739,14 +739,16 @@ void MainWindow::loadScene(const char* file)
 	QString MRVolumeFile = settings.value("MR_VOLUME").toString();
 	string MRVolumeFileString = qPrintable(MRVolumeFile);
 
+
 	QDir d = QFileInfo(MRVolumeFile).absoluteDir();
 	QString absoluteDir = d.absolutePath();
-	string MRVolumeDirString = qPrintable(absoluteDir);
-
+	string MRVolumeDirString = qPrintable(absoluteDir);	
 
 
 	if (MRVolumeFile.startsWith(".")) {
 		MRVolumeFileString = qPrintable(dir.absoluteFilePath(MRVolumeFile));
+		MRVolumeDirString = qPrintable(dir.absoluteFilePath(MRVolumeFile).section("/", 0, -2));
+
 	}
 
 	if (MRVolumeFile != QString("")) {
@@ -756,6 +758,7 @@ void MainWindow::loadScene(const char* file)
 		case 0:
 			theOverlayScene->SetCTVisualizer(MRVolumeFileString, MRVolumeDirString, orientation);
 			reloadFile = MRVolumeFileString;
+			reloadDir = MRVolumeDirString;
 			MeshOrientation = 0;
 			break;
 		case 1:
@@ -767,11 +770,13 @@ void MainWindow::loadScene(const char* file)
 		case 2:
 			theOverlayScene->SetCTVisualizer(MRVolumeFileString, MRVolumeDirString, orientation);
 			reloadFile = MRVolumeFileString;
+			reloadDir = MRVolumeDirString;
 			MeshOrientation = 2;
 			break;
 		case 3:
 			theOverlayScene->SetCTVisualizer(MRVolumeFileString, MRVolumeDirString, orientation);
 			reloadFile = MRVolumeFileString;
+			reloadDir = MRVolumeDirString;
 			MeshOrientation = 3;
 			break;
 		default:

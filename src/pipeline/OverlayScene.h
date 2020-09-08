@@ -102,8 +102,8 @@ public:
 	void reloadPipelineFramegrabber();
 
 	void setBiplaneGeometry(unsigned int streamNumber, int SID, int sourcePatDist, double primAngle, double secAngle, 
-		int lateralPos, int longitudinalPos, int verticalPos, double mmPerPxl);
-	void setMainGeometryByDICOM(int SID, int sourcePatDist, double primAngle, double secAngle, int lateralPos, int longitudinalPos, int verticalPos, double mmPerPixel);
+		int lateralPos, int longitudinalPos, int verticalPos, double mmPerPxl, int imageSizeX, int imageSizeY);
+	void setMainGeometryByDICOM(int SID, int sourcePatDist, double primAngle, double secAngle, int lateralPos, int longitudinalPos, int verticalPos, double mmPerPixel, int imageSizeX, int imageSizeY);
 	void setFramegrabberGeometry(int index, int SID, double primAngle, double secAngle, int lateralPos, int longitudinalPos, int verticalPos, double FDoderMMPerPxl, bool play);
 	void setFramegrabberGeometryLive(int index);
 	void setFramegrabberGeometryBiplaneLive(int index);
@@ -207,9 +207,9 @@ public:
 	void setDICOMAnglesToWindowRef(int index, double primAngle, double secAngle);
 	void getDICOMAnglesToWindowRef(int index, double& primAngle, double& secAngle);
 	void getDicomReferenceGeometryValues(int streamNumber, int& SID, int& sourcePatDist, double& primAngle, double& secAngle, 
-		int& lateralPos, int& longitudinalPos, int& verticalPos, double& mmPerPixel, bool ok[8]);
+		int& lateralPos, int& longitudinalPos, int& verticalPos, double& mmPerPixel, int& imageSizeX, int& imageSizeY, bool ok[10]);
 	void getDicomGeometryValues(int& SID, int& sourcePatDist, double& primAngle, double& secAngle,
-		int& lateralPos, int& longitudinalPos, int& verticalPos, double& mmPerPixel, bool ok[8]);
+		int& lateralPos, int& longitudinalPos, int& verticalPos, double& mmPerPixel, int& imageSizeX, int& imageSizeY, bool ok[10]);
 	/// set/get input file (CT or MR) in order to calculate correct mesh position in OverlayScene->AddOverlayMesh(), because for CT file with wrong spacing the mesh position has to be recalculated
 	void setMRInputFileForMesh(int meshOrientation);
 	int getMRInputFileForMesh();

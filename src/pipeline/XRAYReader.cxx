@@ -798,3 +798,77 @@ double XRAYReader::GetTableTopLateralPosition(bool* valid)
 	*valid = true;
 	return lateralPos;
 }
+
+
+int XRAYReader::GetImageSizeX(bool* valid)
+{
+	gdcm::Reader* dicomReader = new gdcm::Reader;
+	dicomReader->SetFileName(theFilename.c_str());
+
+	int imageSizeX = 0;
+
+	if (!dicomReader->CanRead())
+	{
+		std::cout << "DICOM header is not readable! " <<
+			"Can not retrieve image size (columns) from file!" << std::endl;
+		*valid = false; return -1;
+	}
+
+	bool success = dicomReader->Read();
+	if (!success)
+	{
+		std::cerr << "cannot read DICOM!" << std::endl;
+		*valid = false; return -1;
+	}
+
+	gdcm::File dicomFile = dicomReader->GetFile();
+	gdcm::StringFilter* dicomStringFilter = new gdcm::StringFilter;
+	dicomStringFilter->SetFile(dicomFile);
+
+	gdcm::Tag tag = gdcm::Tag(0x0028, 0x0011);
+	std::string strImageSizeX = dicomStringFilter->ToString(tag);
+	imageSizeX = atoi(strImageSizeX.c_str());
+
+	//delete(dicomStringFilter);	//TODO
+	delete(dicomReader);
+
+	*valid = true;
+	return imageSizeX;
+}
+
+
+int XRAYReader::GetImageSizeY(bool* valid)
+{
+	gdcm::Reader* dicomReader = new gdcm::Reader;
+	dicomReader->SetFileName(theFilename.c_str());
+
+	int imageSizeY = 0;
+
+	if (!dicomReader->CanRead())
+	{
+		std::cout << "DICOM header is not readable! " <<
+			"Can not retrieve image size (rows) from file!" << std::endl;
+		*valid = false; return -1;
+	}
+
+	bool success = dicomReader->Read();
+	if (!success)
+	{
+		std::cerr << "cannot read DICOM!" << std::endl;
+		*valid = false; return -1;
+	}
+
+	gdcm::File dicomFile = dicomReader->GetFile();
+	gdcm::StringFilter* dicomStringFilter = new gdcm::StringFilter;
+	dicomStringFilter->SetFile(dicomFile);
+
+	gdcm::Tag tag = gdcm::Tag(0x0028, 0x0010);
+	std::string strImageSizeY = dicomStringFilter->ToString(tag);
+	imageSizeY = atoi(strImageSizeY.c_str());
+
+	//delete(dicomStringFilter);	//TODO
+	delete(dicomReader);
+
+	*valid = true;
+	return imageSizeY;
+}
