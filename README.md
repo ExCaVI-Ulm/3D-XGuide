@@ -9,6 +9,10 @@ Actual software release offers graphical user interface with basic functionality
  - The core is written in C++
  - Freely available under the Simplified BSD License
  - Implements easily extendable data processing pipeline concept
+ 
+The data processing pipeline defining interfaces between the single objects/algorithms is shown below
+<p align=center>
+<img src="images/processingPipeline.png" width="350">
 
 #### Build system
  - The project and module configuration/generation is performed through [CMake](https://cmake.org/) (>= 3.16.2)
