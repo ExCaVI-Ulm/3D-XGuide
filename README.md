@@ -12,7 +12,7 @@ Actual software release offers graphical user interface with basic functionality
  
 The data processing pipeline defining interfaces between the single objects/algorithms is shown below
 <p align=center>
-<img src="images/processingPipeline.png" width="350">
+<img src="images/processingPipeline.tiff" width="350">
 
 #### Build system
  - The project and module configuration/generation is performed through [CMake](https://cmake.org/) (>= 3.16.2)
