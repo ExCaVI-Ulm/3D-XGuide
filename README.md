@@ -5,6 +5,10 @@
 3D-XGuide is a software framework providing a foundation for rapid prototyping of new approaches in the field of XR navigation guidance.
 Actual software release offers graphical user interface with basic functionality including data import and handling, calculation of projection geometry and transformations between related coordinate systems, rigid 3D-3D registration, and template-matching-based tracking and motion compensation algorithms in 2D and 3D.
 
+The implementation of 3D-XGuide from this repository is described in the following paper:
+[Vernikouskaya I, Bertsche D, Rottbauer W, Rasche V (2020) 3D-XGuide: open-source X-ray navigation guidance system. Int J Comput Assist Radiol Surg](https://rdcu.be/b8Ags)
+
+
 #### General
  - The core is written in C++
  - Freely available under the Simplified BSD License
@@ -32,6 +36,7 @@ The data processing pipeline defining interfaces between the single objects/algo
 
 #### Citation
 If you use any part of this repository, please cite:
+[Vernikouskaya I, Bertsche D, Rottbauer W, Rasche V (2020) 3D-XGuide: open-source X-ray navigation guidance system. Int J Comput Assist Radiol Surg](https://rdcu.be/b8Ags)
 
 
 #### Acknowledgements
