@@ -6,7 +6,7 @@
 Actual software release offers graphical user interface with basic functionality including data import and handling, calculation of projection geometry and transformations between related coordinate systems, rigid 3D-3D registration, and template-matching-based tracking and motion compensation algorithms in 2D and 3D.
 
 The implementation of 3D-XGuide from this repository is described in the following paper:
-[Vernikouskaya I, Bertsche D, Rottbauer W, Rasche V (2020) 3D-XGuide: open-source X-ray navigation guidance system. Int J Comput Assist Radiol Surg](https://rdcu.be/b8Ags)
+- Vernikouskaya I, Bertsche D, Rottbauer W, Rasche V. [3D-XGuide: open-source X-ray navigation guidance system.](https://doi.org/10.1007/s11548-020-02274-0) Int J CARS (2020)
 
 
 #### General
@@ -36,8 +36,7 @@ The data processing pipeline defining interfaces between the single objects/algo
 
 #### Citation
 If you use any part of this repository, please cite:
-[Vernikouskaya I, Bertsche D, Rottbauer W, Rasche V (2020) 3D-XGuide: open-source X-ray navigation guidance system. Int J Comput Assist Radiol Surg](https://rdcu.be/b8Ags)
-
+- Vernikouskaya I, Bertsche D, Rottbauer W, Rasche V. [3D-XGuide: open-source X-ray navigation guidance system.](https://doi.org/10.1007/s11548-020-02274-0) Int J CARS (2020)
 
 #### Acknowledgements
 3D-XGuide was developed within the [ExCaVI](https://www.uniklinik-ulm.de/innere-medizin-ii/experimentelle-forschung/experimental-cardiovascular-imaging-excavi/image-guided-interventions.html) group of Ulm University and Ulm University Medical Center. 
