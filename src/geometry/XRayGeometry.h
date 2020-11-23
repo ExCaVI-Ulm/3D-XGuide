@@ -44,8 +44,8 @@ public:
 
 
 	void setZoomFactor(double factor);
-	void setImageDimension(int width, int height); /// in [pix]
-	void getImageDimension(int& width, int& height) const; /// in [pix]
+	void setImageDimension(int width, int height, bool cut); /// in [pix]
+	void getImageDimension(int& width, int& height, bool& cut) const; /// in [pix]
 	void setMillimeterToPixelScaling(double mmPerPixel); // mmPerPixel = SystemGeometryDefinitions::MILLIMETER_PER_PIXEL ( = Imager Pixel Spacing in DICOM header)
 	void setTablePosition(double lateralPos, double longitudinalPos, double verticalPos);
 	void getTablePosition(double& positionX, double& positionY, double& positionZ);
@@ -109,6 +109,7 @@ private:
 	double zoomFactor;
 
 	int imageHeight, imageWidth; // height and width of the image (as it is shown) in [pix]	
+	bool imageCut; // 1 - for geometry panel cut image from framegrabber and original DICOMs; 0 - otherweise (if image uncut from framegrabber)
 
 	bool isFramegrabber;
 

@@ -27,6 +27,7 @@ XRayGeometry::XRayGeometry()
 	tablePosition[0] = tablePosition[1] = tablePosition[2] = 0.0;
 	table[0] = table[1] = table[2] = 0.0;
 	isFramegrabber = false;
+	imageCut = 1;
 }
 
 XRayGeometry::XRayGeometry(const XRayGeometry& other)
@@ -261,16 +262,19 @@ void XRayGeometry::getTablePosition(double& positionX, double& positionY, double
 
 }
 
-void XRayGeometry::setImageDimension(int width, int height)
+void XRayGeometry::setImageDimension(int width, int height, bool cut)
 {
 	imageWidth = width;
 	imageHeight = height;
+	imageCut = cut;
+
 }
 
-void XRayGeometry::getImageDimension(int& width, int& height) const
+void XRayGeometry::getImageDimension(int& width, int& height, bool& cut) const
 {
 	width = imageWidth;
 	height = imageHeight;
+	cut = imageCut;
 }
 
 void XRayGeometry::getPositionerAngles(double& rot, double& ang) const
@@ -301,8 +305,14 @@ void XRayGeometry::transformFromImageToDetectorCoordinates(double& x, double& y)
 	if (!isFramegrabber) {
 		x -= (imageWidth / 2);
 	}
-	else {
+	else if (!imageCut)
+	{
 		x -= (imageWidth / 2 + SystemGeometryDefinitions::CLIP_X_MIN); //only for inputFromFramegrabber
+	}
+	else
+	{
+		x -= (imageWidth / 2);
+		
 	};
 	y -= (imageHeight/2);
 
@@ -319,8 +329,13 @@ void XRayGeometry::transformFromDetectorToImageCoordinates(double& x, double& y)
 	if (!isFramegrabber) {
 		x += imageWidth / 2;
 	}
-	else {
+	else if (!imageCut)
+	{
 		x += imageWidth / 2 + SystemGeometryDefinitions::CLIP_X_MIN;	//only for inputFromFramegrabber
+	}
+	else
+	{
+		x += imageWidth / 2;
 	};
 	y += imageHeight / 2;
 }
@@ -332,7 +347,7 @@ void XRayGeometry::transformFromImageToDetectorCoordinates(double pt[2]) const
 
 void XRayGeometry::transformFromDetectorToImageCoordinates(double pt[2]) const
 {
-	this->transformFromImageToDetectorCoordinates(pt[0],pt[1]);
+	this->transformFromDetectorToImageCoordinates(pt[0],pt[1]);
 }
 
 void XRayGeometry::transformFromSourceToPatientCoordinates(double pt[3]) const
@@ -384,10 +399,13 @@ void XRayGeometry::project3dPointToImageCoordinates(const double _pt3d[3], doubl
 
 void XRayGeometry::project3dPointToDetectorCoordinates(const double _pt3d[3], double _pt2d[2]) const
 {
+	double x, y, z;
+	getTablePositionInWC(x, y, z);
+
 	double pt[4];
-	pt[0] = _pt3d[0];
-	pt[1] = _pt3d[1];
-	pt[2] = _pt3d[2];
+	pt[0] = _pt3d[0] + x;
+	pt[1] = _pt3d[1] + y;
+	pt[2] = _pt3d[2] + z;
 	pt[3] = 1.0;
 	patientToDetectorMatrix->MultiplyPoint(pt,pt);
 	_pt2d[0] = pt[0] / pt[2];

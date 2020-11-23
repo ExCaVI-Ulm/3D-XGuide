@@ -54,6 +54,8 @@ public:
 	void ReadGeometryFramegrabberSID(int& SIDRead);
 	void ReadGeometryFramegrabbermmPerPxl(double& mmPerPxlRead);
 	void ReadGeometryFramegrabberFD(int& FDRead);
+	void ReadGeometryFramegrabberImageSizeX(int& ImageSizeXRead);
+	void ReadGeometryFramegrabberImageSizeY(int& ImageSizeYRead);
 	void ReadGeometryFramegrabberSPD(int& SPDread);
 
 protected:

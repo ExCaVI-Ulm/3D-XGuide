@@ -1329,6 +1329,7 @@ void OverlayScene::record(int value)
 	meta->SetAttributeValue(DC::DistanceSourceToDetector, sid);
 	meta->SetAttributeValue(DC::StudyID, tabTopVertPos); // TableTopVerticalPosition
 	meta->SetAttributeValue(DC::SeriesNumber, longChar); // TableTopLongitudinalPosition
+	//meta->SetAttributeValue(DC::AccessionNumber, longChar); // TableTopLongitudinalPosition
 	meta->SetAttributeValue(DC::AcquisitionNumber, latChar); //TableTopLateralPosition
 	meta->SetAttributeValue(DC::PositionReferenceIndicator, FDchar); // FD
 	meta->SetAttributeValue(DC::StudyDate, primAngle); //PositionerPrimaryAngle
@@ -1424,6 +1425,7 @@ void OverlayScene::recordBiplane(int value, int index, int currentRun)
 	meta0->SetAttributeValue(DC::DistanceSourceToDetector, sidFront);
 	meta0->SetAttributeValue(DC::StudyID, tabTopVertPos); // TableTopVerticalPosition
 	meta0->SetAttributeValue(DC::SeriesNumber, longChar); // TableTopLongitudinalPosition
+	//meta0->SetAttributeValue(DC::AccessionNumber, longChar); // TableTopLongitudinalPosition
 	meta0->SetAttributeValue(DC::AcquisitionNumber, latChar); //TableTopLateralPosition
 	meta0->SetAttributeValue(DC::PositionReferenceIndicator, FDchar); // FD
 	meta0->SetAttributeValue(DC::StudyDate, primAngle); //PositionerPrimaryAngle
@@ -1433,6 +1435,7 @@ void OverlayScene::recordBiplane(int value, int index, int currentRun)
 	meta1->SetAttributeValue(DC::DistanceSourceToDetector, sidLat);
 	meta1->SetAttributeValue(DC::StudyID, tabTopVertPos); // TableTopVerticalPosition
 	meta1->SetAttributeValue(DC::SeriesNumber, longChar); // TableTopLongitudinalPosition
+	//meta1->SetAttributeValue(DC::AccessionNumber, longChar); // TableTopLongitudinalPosition
 	meta1->SetAttributeValue(DC::AcquisitionNumber, latChar); //TableTopLateralPosition
 	meta1->SetAttributeValue(DC::PositionReferenceIndicator, FDchar1); // FD
 	meta1->SetAttributeValue(DC::StudyDate, primAngle1); //PositionerPrimaryAngle
@@ -1608,12 +1611,13 @@ void OverlayScene::playReferenceStream(int framenumber, char* dir, int index)
 	strcat(bufferNew, int2char);
 	strcat(bufferNew, H);
 
-	QFileInfo qfile  = QString(bufferNew);
+	//INA: otherwise cannot load new captured frames
+	/*QFileInfo qfile  = QString(bufferNew);
 	if (!qfile.exists() || !qfile.isFile())
 	{
 		cout << "ERROR: Nothing to play." << endl;
 		return;
-	}
+	}*/
 
 	theXRAYReaders[index]->setInputFile(bufferNew);
 	theXRAYReaders[index]->Update();
@@ -2296,7 +2300,7 @@ void OverlayScene::setBiplaneGeometry(unsigned int streamNumber, int SID, int so
 
 	geometry->setImageDimension(
 		imageSizeX, 
-		imageSizeY
+		imageSizeY, 1
 		);
 	geometry->setIsFramegrabber(isFramegrabber);
 	geometry->setTablePosition((double)lateralPos, (double)longitudinalPos, (double)verticalPos);
@@ -2334,11 +2338,19 @@ void OverlayScene::setBiplaneGeometry(unsigned int streamNumber, int SID, int so
 void OverlayScene::setGeometryFromFramegrabber(unsigned int streamNumber, int SID, double primAngle, double secAngle, int lateralPos, int longitudinalPos, int verticalPos, double mmPerPxl)
 {
 	double angles[2] = { primAngle, secAngle };
+	int imageSizeX;
+	bool imageCut = 1;
+	theXRAYReaders[streamNumber]->ReadGeometryFramegrabberImageSizeX(imageSizeX);
+	if (imageSizeX > 1000)
+	{
+		imageCut = 0;
+	}
+
 	if (streamNumber == 0)
 	{
 		theBiplaneGeometry.firstSystem.setImageDimension(
 			SystemGeometryDefinitions::CROPPED_SIZE_Y,
-			SystemGeometryDefinitions::CROPPED_SIZE_Y
+			SystemGeometryDefinitions::CROPPED_SIZE_Y, imageCut
 
 		);
 		theBiplaneGeometry.firstSystem.setIsFramegrabber(isFramegrabber);
@@ -2350,7 +2362,7 @@ void OverlayScene::setGeometryFromFramegrabber(unsigned int streamNumber, int SI
 	{
 		theBiplaneGeometry.secondSystem.setImageDimension(
 			SystemGeometryDefinitions::CROPPED_SIZE_Y,
-			SystemGeometryDefinitions::CROPPED_SIZE_Y
+			SystemGeometryDefinitions::CROPPED_SIZE_Y, imageCut
 
 		);
 		theBiplaneGeometry.secondSystem.setIsFramegrabber(isFramegrabber);
@@ -2434,12 +2446,12 @@ void OverlayScene::setupGeometryFromFramegrabber(int index)
 	}
 
 	int width, height;
-	bool ok[1];
-	double mmPerPixel, scaleFactor, bounds[6], detector[3], detectorCentered[3], angle[2], source[3];
+	bool ok[1], imageCut;
+	double mmPerPixel, scaleFactor, bounds[6], detector[3], detectorCentered[3], angle[2], source[3], origin_x;
 	double isoCenterToDetectorDistance, isoCenterToSourceDistance;
 	theXRAYReaders[index]->GetOutput()->GetBounds(bounds);
 	/* bring the the detector to the correct position */
-	geometry->getImageDimension(width, height);
+	geometry->getImageDimension(width, height, imageCut);
 	scaleFactor = geometry->getPixelToMillimeterScaling();
 	geometry->getPositionerAngles(angle[0], angle[1]);
 	geometry->getSourcePosition(source[0], source[1], source[2]);
@@ -2447,12 +2459,20 @@ void OverlayScene::setupGeometryFromFramegrabber(int index)
 	isoCenterToDetectorDistance = geometry->getIsoCenterToDetectorDistance();
 	isoCenterToSourceDistance = geometry->getIsoCenterToSourceDistance();
 
-	detectorCentered[0] = detector[0] - bounds[0] - (width / 2.0)* scaleFactor - SystemGeometryDefinitions::CLIP_X_MIN* scaleFactor;
+	detectorCentered[0] = detector[0] - bounds[0] - (width / 2.0)* scaleFactor;
+	origin_x = bounds[0] + width / 2.0* scaleFactor;
+	
 	detectorCentered[1] = detector[1] - bounds[2] - (height / 2.0)* scaleFactor;
 	detectorCentered[2] = detector[2] - bounds[4];
 
+	if (!imageCut)
+	{
+		detectorCentered[0] -= SystemGeometryDefinitions::CLIP_X_MIN* scaleFactor;
+		origin_x += SystemGeometryDefinitions::CLIP_X_MIN* scaleFactor;
+	}
+
 	theXRAYActors3D[index]->SetOrigin(
-			bounds[0] + width / 2.0* scaleFactor + SystemGeometryDefinitions::CLIP_X_MIN* scaleFactor,
+			origin_x,
 			bounds[2] + height / 2.0*scaleFactor,
 			bounds[4]
 			);
@@ -2469,7 +2489,7 @@ void OverlayScene::setupGeometryFromFramegrabber(int index)
 
 		/* 2D overlay view */
 	theXRAYActors[index]->SetPosition(
-			-(bounds[0] + width / 2.0* scaleFactor + SystemGeometryDefinitions::CLIP_X_MIN* scaleFactor),
+			-(origin_x),
 			-(bounds[2] + height / 2.0*scaleFactor),
 			-bounds[4] + geometry->getIsoCenterToDetectorDistance()
 		);
@@ -2495,7 +2515,7 @@ void OverlayScene::setMainGeometryByDICOM(int SID, int sourcePatDist, double pri
 	theBiplaneGeometry.mainSystem.setIsFramegrabber(isFramegrabber);
 	theBiplaneGeometry.mainSystem.setImageDimension(
 		imageSizeX,
-		imageSizeY
+		imageSizeY, 1
 		);
 
 	double angles[2] = { primAngle, secAngle};
@@ -2581,7 +2601,7 @@ void OverlayScene::setFramegrabberGeometryBiplaneLive(int index)
 	if (index == 0) {
 		theBiplaneGeometry.firstSystem.setImageDimension(
 			SystemGeometryDefinitions::CROPPED_SIZE_Y,
-			SystemGeometryDefinitions::CROPPED_SIZE_Y
+			SystemGeometryDefinitions::CROPPED_SIZE_Y, 0
 		);
 
 		theBiplaneGeometry.firstSystem.setIsFramegrabber(isFramegrabber);
@@ -2599,7 +2619,7 @@ void OverlayScene::setFramegrabberGeometryBiplaneLive(int index)
 	else if (index == 1) {
 		theBiplaneGeometry.secondSystem.setImageDimension(
 			SystemGeometryDefinitions::CROPPED_SIZE_Y,
-			SystemGeometryDefinitions::CROPPED_SIZE_Y
+			SystemGeometryDefinitions::CROPPED_SIZE_Y, 0
 
 		);
 		theBiplaneGeometry.secondSystem.setIsFramegrabber(isFramegrabber);
@@ -2626,10 +2646,17 @@ void OverlayScene::setFramegrabberGeometryBiplaneLive(int index)
 
 void OverlayScene::setFramegrabberGeometry(int index, int SID, double primAngle, double secAngle, int lateralPos, int longitudinalPos, int verticalPos, double FDoderMMPerPxl, bool play)
 {
+	int imageSizeX;
+	bool imageCut = 1;
+	readerMainXRAY->ReadGeometryFramegrabberImageSizeX(imageSizeX);
+	if (imageSizeX > 1000)
+	{
+		imageCut = 0;
+	}
 
 	theBiplaneGeometry.mainSystem.setImageDimension(
 		SystemGeometryDefinitions::CROPPED_SIZE_Y,
-		SystemGeometryDefinitions::CROPPED_SIZE_Y
+		SystemGeometryDefinitions::CROPPED_SIZE_Y, imageCut
 
 	);
 	double mmPerPxl, mmPerPxlOld;
@@ -2732,7 +2759,7 @@ void OverlayScene::setFramegrabberGeometryLive(int index)
 		
 	theBiplaneGeometry.mainSystem.setImageDimension(
 		SystemGeometryDefinitions::CROPPED_SIZE_Y,
-		SystemGeometryDefinitions::CROPPED_SIZE_Y
+		SystemGeometryDefinitions::CROPPED_SIZE_Y, 0
 
 	);
 	double mmPerPxl, mmPerPxlOld;
@@ -2810,12 +2837,13 @@ void OverlayScene::setupFramegrabberGeometry()
 	XRayGeometry* geometry = &theBiplaneGeometry.mainSystem;
 
 	int width, height;
-	double scaleFactor, bounds[6], detector[3], angle[2], source[3];
+	bool imageCut;
+	double scaleFactor, bounds[6], detector[3], angle[2], source[3], origin_x;
 	double verticalPos, longitudinalPos, lateralPos;
 	double isoCenterToDetectorDistance, isoCenterToSourceDistance;
 
 	/* bring the the detector to the correct position */
-	geometry->getImageDimension(width, height);
+	geometry->getImageDimension(width, height, imageCut);
 	scaleFactor = geometry->getPixelToMillimeterScaling();
 	geometry->getPositionerAngles(angle[0], angle[1]);
 	geometry->getSourcePosition(source[0], source[1], source[2]);
@@ -2826,8 +2854,15 @@ void OverlayScene::setupFramegrabberGeometry()
 	theMotionCorrections->SetImageToWorldCoordinatesScaling(scaleFactor);
 	theMotionCorrections->setGeometry(geometry);
 
+	origin_x = width / 2.0* scaleFactor;
+	if (!imageCut)
+	{
+		origin_x += SystemGeometryDefinitions::CLIP_X_MIN* scaleFactor;
+	}
+
+
 	actorMainXRAY->SetPosition(
-		-(width / 2.0* scaleFactor + SystemGeometryDefinitions::CLIP_X_MIN* scaleFactor),
+		-(origin_x),
 		-(height / 2.0*scaleFactor),
 		geometry->getIsoCenterToDetectorDistance()
 		);
@@ -2909,7 +2944,7 @@ void OverlayScene::setupBiplaneGeometry(int index)
 	}
 
 	int width, height;
-	bool ok[1];
+	bool ok[1], imageCut;
 	double mmPerPixel, scaleFactor, bounds[6], detector[3], detectorCentered[3], angle[2], source[3];
 	double verticalPos, longitudinalPos, lateralPos;
 	double isoCenterToDetectorDistance, isoCenterToSourceDistance;
@@ -2924,7 +2959,7 @@ void OverlayScene::setupBiplaneGeometry(int index)
 	}		
 
 	/* bring the the detector to the correct position */
-	geometry->getImageDimension(width, height);	
+	geometry->getImageDimension(width, height, imageCut);	
 	scaleFactor = geometry->getPixelToMillimeterScaling();
 	geometry->getPositionerAngles(angle[0], angle[1]);
 	geometry->getSourcePosition(source[0], source[1], source[2]);

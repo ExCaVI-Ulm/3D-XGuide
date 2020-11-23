@@ -1,1 +1,4 @@
 RELEASE
+build
+build.cmd
+package.cmd

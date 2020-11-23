@@ -137,6 +137,7 @@ void XRAYReader::ReadGeometryFramegrabber(double& primAngleRead, double& secAngl
 {
 	gdcm::Reader* dicomReader = new gdcm::Reader;
 	dicomReader->SetFileName(theFilename.c_str());
+	const char* description; // for data grabbed with python script long Table position is written to tag(0x0008, 0x0050), modality is XA and implementation version name is PYDICOM, for 3D-XGuide - (0x0020, 0x0011), CT, and VTK_DICOM
 
 	if (!dicomReader->CanRead())
 	{
@@ -158,17 +159,35 @@ void XRAYReader::ReadGeometryFramegrabber(double& primAngleRead, double& secAngl
 	dicomStringFilter->SetFile(dicomFile);
 
 	//Tag is according to DICOM Header (ImageJ)
-	gdcm::Tag tag = gdcm::Tag(0x0008, 0x0020);
+
+	gdcm::Tag tag = gdcm::Tag(0x0002, 0x0013);
 	std::string strSID = dicomStringFilter->ToString(tag);
+	description = strSID.c_str();
+	if (description[0] == 'V')
+	{
+		tag = gdcm::Tag(0x0020, 0x0011);	
+	}
+	else
+	{
+		tag = gdcm::Tag(0x0008, 0x0050);
+
+	}
+	strSID = dicomStringFilter->ToString(tag);
+	longRead = atoi(strSID.c_str());
+
+
+	tag = gdcm::Tag(0x0008, 0x0020);
+	strSID = dicomStringFilter->ToString(tag);
 	primAngleRead = atoi(strSID.c_str());
 
 	tag = gdcm::Tag(0x0008, 0x0030);
 	strSID = dicomStringFilter->ToString(tag);
 	secAngleRead = atoi(strSID.c_str());
 
-	tag = gdcm::Tag(0x0020, 0x0011);
+	//tag = gdcm::Tag(0x0020, 0x0011);	
+	/*tag = gdcm::Tag(0x0008, 0x0050);
 	strSID = dicomStringFilter->ToString(tag);
-	longRead = atoi(strSID.c_str());
+	longRead = atoi(strSID.c_str());*/
 
 	tag = gdcm::Tag(0x0020, 0x0012);
 	strSID = dicomStringFilter->ToString(tag);
@@ -202,6 +221,7 @@ void XRAYReader::ReadGeometryFramegrabberAngle(double& primAngleRead, double& se
 
 	gdcm::Reader* dicomReader = new gdcm::Reader;
 	dicomReader->SetFileName(theFilename.c_str());
+
 
 	if (!dicomReader->CanRead())
 	{
@@ -239,6 +259,7 @@ void XRAYReader::ReadGeometryFramegrabberTable(int& longRead, int& latRead, int&
 {
 	gdcm::Reader* dicomReader = new gdcm::Reader;
 	dicomReader->SetFileName(theFilename.c_str());
+	const char* description; // for data grabbed with python script long Table position is written to tag(0x0008, 0x0050), for vtk - (0x0020, 0x0011)
 
 	if (!dicomReader->CanRead())
 	{
@@ -259,10 +280,27 @@ void XRAYReader::ReadGeometryFramegrabberTable(int& longRead, int& latRead, int&
 
 	dicomStringFilter->SetFile(dicomFile);
 
-	//Tag is according to DICOM Header (ImageJ)
-	gdcm::Tag tag = gdcm::Tag(0x0020, 0x0011);
+	gdcm::Tag tag = gdcm::Tag(0x0002, 0x0013);
 	std::string strTable = dicomStringFilter->ToString(tag);
+	description = strTable.c_str();
+	if (description[0] == 'V')
+	{
+		tag = gdcm::Tag(0x0020, 0x0011);
+	}
+	else
+	{
+		tag = gdcm::Tag(0x0008, 0x0050);
+
+	}
+	strTable = dicomStringFilter->ToString(tag);
 	longRead = atoi(strTable.c_str());
+
+
+	//Tag is according to DICOM Header (ImageJ)
+	//gdcm::Tag tag = gdcm::Tag(0x0020, 0x0011);
+	/*tag = gdcm::Tag(0x0008, 0x0050);
+	strTable = dicomStringFilter->ToString(tag);
+	longRead = atoi(strTable.c_str());*/
 
 	tag = gdcm::Tag(0x0020, 0x0012);
 	strTable = dicomStringFilter->ToString(tag);
@@ -367,6 +405,70 @@ void XRAYReader::ReadGeometryFramegrabberFD(int& FDRead)
 	gdcm::Tag tag = gdcm::Tag(0x0020, 0x1040);
 	std::string strFD = dicomStringFilter->ToString(tag);
 	FDRead = atoi(strFD.c_str()); //TODO
+
+	delete(dicomReader);
+}
+
+void XRAYReader::ReadGeometryFramegrabberImageSizeX(int& ImageSizeXRead)
+{
+	gdcm::Reader* dicomReader = new gdcm::Reader;
+	dicomReader->SetFileName(theFilename.c_str());
+
+	if (!dicomReader->CanRead())
+	{
+		std::cout << "DICOM header is not readable! " <<
+			"Can not retrieve image size(columns) from file!" << std::endl;
+		return;
+	}
+
+	bool success = dicomReader->Read();
+	if (!success)
+	{
+		std::cerr << "cannot read DICOM!" << std::endl;
+		return;
+	}
+
+	gdcm::File dicomFile = dicomReader->GetFile();
+	gdcm::StringFilter* dicomStringFilter = new gdcm::StringFilter;
+
+	dicomStringFilter->SetFile(dicomFile);
+
+	//Tag is according to DICOM Header (ImageJ)
+	gdcm::Tag tag = gdcm::Tag(0x0028, 0x0011);
+	std::string strSizeX = dicomStringFilter->ToString(tag);
+	ImageSizeXRead = atoi(strSizeX.c_str()); //TODO
+
+	delete(dicomReader);
+}
+
+void XRAYReader::ReadGeometryFramegrabberImageSizeY(int& ImageSizeYRead)
+{
+	gdcm::Reader* dicomReader = new gdcm::Reader;
+	dicomReader->SetFileName(theFilename.c_str());
+
+	if (!dicomReader->CanRead())
+	{
+		std::cout << "DICOM header is not readable! " <<
+			"Can not retrieve image size(rows) from file!" << std::endl;
+		return;
+	}
+
+	bool success = dicomReader->Read();
+	if (!success)
+	{
+		std::cerr << "cannot read DICOM!" << std::endl;
+		return;
+	}
+
+	gdcm::File dicomFile = dicomReader->GetFile();
+	gdcm::StringFilter* dicomStringFilter = new gdcm::StringFilter;
+
+	dicomStringFilter->SetFile(dicomFile);
+
+	//Tag is according to DICOM Header (ImageJ)
+	gdcm::Tag tag = gdcm::Tag(0x0028, 0x0010);
+	std::string strSizeY = dicomStringFilter->ToString(tag);
+	ImageSizeYRead = atoi(strSizeY.c_str()); //TODO
 
 	delete(dicomReader);
 }
