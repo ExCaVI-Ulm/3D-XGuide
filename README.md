@@ -5,6 +5,10 @@
 3D-XGuide is a software framework providing a foundation for rapid prototyping of new approaches in the field of XR navigation guidance.
 Actual software release offers graphical user interface with basic functionality including data import and handling, calculation of projection geometry and transformations between related coordinate systems, rigid 3D-3D registration, and template-matching-based tracking and motion compensation algorithms in 2D and 3D.
 
+The implementation of 3D-XGuide from this repository is described in the following paper:
+- Vernikouskaya I, Bertsche D, Rottbauer W, Rasche V. [3D-XGuide: open-source X-ray navigation guidance system.](https://doi.org/10.1007/s11548-020-02274-0) Int J CARS (2020)
+
+
 #### General
  - The core is written in C++
  - Freely available under the Simplified BSD License
@@ -12,7 +16,7 @@ Actual software release offers graphical user interface with basic functionality
  
 The data processing pipeline defining interfaces between the single objects/algorithms is shown below
 <p align=center>
-<img src="images/processingPipeline.png" width="450">
+<img src="images/processingPipeline.png" width="750">
 
 #### Build system
  - The project and module configuration/generation is performed through [CMake](https://cmake.org/) (>= 3.16.2)
@@ -32,7 +36,7 @@ The data processing pipeline defining interfaces between the single objects/algo
 
 #### Citation
 If you use any part of this repository, please cite:
-
+- Vernikouskaya I, Bertsche D, Rottbauer W, Rasche V. [3D-XGuide: open-source X-ray navigation guidance system.](https://doi.org/10.1007/s11548-020-02274-0) Int J CARS (2020)
 
 #### Acknowledgements
 3D-XGuide was developed within the [ExCaVI](https://www.uniklinik-ulm.de/innere-medizin-ii/experimentelle-forschung/experimental-cardiovascular-imaging-excavi/image-guided-interventions.html) group of Ulm University and Ulm University Medical Center. 
