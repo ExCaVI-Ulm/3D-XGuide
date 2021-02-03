@@ -2855,8 +2855,6 @@ void XRayViewer::AddDistanceMeasurementToView(bool checked)
 	
 	vtkWidgetMainStream->GetInteractor()->Start();
 	lineWidget->SetEnabled(checked);
-	vtkWidgetMainStream->GetRenderWindow()->GetRenderers()->GetFirstRenderer()->GetActiveCamera()->SetParallelProjection(checked);
-	vtkWidgetMainStream->GetRenderWindow()->Render();
 
 }
 
