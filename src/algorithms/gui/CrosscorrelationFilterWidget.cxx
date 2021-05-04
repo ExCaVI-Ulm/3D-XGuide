@@ -84,6 +84,7 @@ void CrosscorrelationFilterWidget::loadFromSettings()
 	tplSizeY->setValue(settings.value("TplSiteY").toInt());
 	useROI->setChecked(settings.value("UseRoi").toBool());
 	roiSize->setValue(settings.value("RoiSize").toDouble());
+	restrictY->setChecked(settings.value("RestrictY").toBool());
 	useBasicTpl->setChecked(settings.value("UseBasicTpl").toBool());
 	useModelBasedTpl->setChecked(settings.value("UseModelBasedTpl").toBool());
 	numberOfRotations->setValue(settings.value("NumberOfRotations").toInt());
@@ -107,6 +108,7 @@ void CrosscorrelationFilterWidget::writeToSettings()
 	settings.setValue("TplSiteY", tplSizeY->value());
 	settings.setValue("UseRoi", useROI->isChecked());
 	settings.setValue("RoiSize", roiSize->value());
+	settings.setValue("RestrictY", restrictY->isChecked());
 	settings.setValue("UseBasicTpl", useBasicTpl->isChecked());
 	settings.setValue("UseModelBasedTpl", useModelBasedTpl->isChecked());
 	settings.setValue("NumberOfRotations", numberOfRotations->value());

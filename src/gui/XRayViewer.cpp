@@ -95,6 +95,9 @@ XRayViewer::XRayViewer(QWidget *parent, OverlayScene* scene) :
 	QMainWindow(parent), previousMeshWindow(-1), txtActors{ NULL, NULL, NULL }/*, distanceWidget(0), inputIsFromFile(false)*/, run(0), isButtonPlayMainClickedFirst(0),
 	isPause(false), recordMode(0), biplaneSystem(false), monoplaneView(false), startPlay(false), biplaneTemplateSet{ false, false }, biplaneStartAgain{ false, false, false, false, false, false, false, false,  false, false, false, false }
 {
+
+	count_FG = count_FG = 0;
+	count_sys = count_sys = 0;
 	lastDirectory = "B:\\NAVIGATION\\data";
 	/*patientDirectory = "..\\Patientname";*/
 	//patientDirectoryChar = "..\\Patientname\\";
@@ -1233,6 +1236,23 @@ int XRayViewer::getSliderValue(int index)
 //	
 //}
 
+void XRayViewer::resetCounters(bool system)
+{
+	if (system)
+	{
+		count_sys = 1;
+		scene->switchSystems_sys = true;
+		scene->switchSystems_FG = false;
+	}
+	else
+	{
+		count_FG = 1;
+		scene->switchSystems_sys = false;
+		scene->switchSystems_FG = true;
+	}
+}
+
+
 void XRayViewer::setSliderValue(int index, int value)
 {
 	QString QValue = QString::number(value);	
@@ -1352,7 +1372,7 @@ void XRayViewer::activateGui(int framenumber, char* dir, int index)
 			buttonPlay->setEnabled(true);
 			sliderBufferedFrame->setEnabled(true);
 			buttonLoadECG->setEnabled(true);
-			ButtonLoadRunFirst->setEnabled(false);
+			ButtonLoadRunFirst->setEnabled(true);
 
 			labelCurrentFrame->setText(QValue);
 			sliderBufferedFrame->setValue(framenumber);
@@ -1366,7 +1386,7 @@ void XRayViewer::activateGui(int framenumber, char* dir, int index)
 			buttonPlaySecondStream->setEnabled(true);
 			sliderBufferedFrameSecondStream->setEnabled(true);
 			buttonLoadECGSecondStream->setEnabled(true);
-			ButtonLoadRunSecond->setEnabled(false);
+			ButtonLoadRunSecond->setEnabled(true);
 
 			labelCurrentFrameSecondStream->setText(QValue);
 			sliderBufferedFrameSecondStream->setValue(framenumber);
@@ -1516,10 +1536,31 @@ void XRayViewer::on_actionSelectXRayReferenceFirst_triggered()
 		sliderBufferedFrameMainStream->setEnabled(true);
 		/*---------------------------------------------------------------------------------------------------------------*/
 		streamPlayerMainStream->stop();
-		scene->alreadyConstructedPipelineDICOM[1] = false;
-		scene->loadDefaultMeshPositionBool = true;
+		//scene->alreadyConstructedPipelineDICOM[1] = false;
+		//scene->loadDefaultMeshPositionBool = true;
 	}
+
 	scene->isFramegrabber = false;
+	if (count_FG == 0)
+	{
+		count_sys += 1;
+		if (count_sys == 1)
+		{
+			scene->switchSystems_sys = true;
+		}
+		else
+		{
+			scene->switchSystems_sys = false;
+		}
+	}
+	else
+	{
+		scene->switchSystems_sys = false;
+		scene->switchSystems_FG = false;
+	}
+	
+	//scene->alreadyConstructedPipeline[0] = false;
+	scene->loadDefaultMeshPositionBool = true;
 	QByteArray file;
 	//vector<string> files;
 
@@ -1592,10 +1633,30 @@ void XRayViewer::on_actionSelectXRayReferenceSecond_triggered()
 		sliderBufferedFrameMainStream->setEnabled(true);
 		/*---------------------------------------------------------------------------------------------------------------*/
 		streamPlayerMainStream->stop();
-		scene->alreadyConstructedPipelineDICOM[0] = false;
-		scene->loadDefaultMeshPositionBool = true;
+		//scene->alreadyConstructedPipelineDICOM[0] = false;
+		//scene->loadDefaultMeshPositionBool = true;
 	}
 	scene->isFramegrabber = false;
+	//scene->alreadyConstructedPipeline[1] = false;
+	if (count_FG == 0)
+	{
+		count_sys += 1;
+		if (count_sys == 1)
+		{
+			scene->switchSystems_sys = true;
+		}
+		else
+		{
+			scene->switchSystems_sys = false;
+		}
+	}
+	else
+	{
+		scene->switchSystems_sys = false;
+		scene->switchSystems_FG = false;
+	}
+	
+	scene->loadDefaultMeshPositionBool = true;
 	QByteArray file;
 
 	QString fileFormats("All files (*);; Image files (*.dcm)");
@@ -2329,7 +2390,25 @@ void XRayViewer::on_ButtonLoadRunFirst_clicked()
 	//=============================================================================================
 	scene->isFramegrabber = 1; // zum Testen ohne Geraet
 	//=============================================================================================
-
+	scene->loadDefaultMeshPositionBool = true;
+	if (count_sys == 0)
+	{
+		count_FG += 1;
+		if (count_FG == 1)
+		{
+			scene->switchSystems_FG = true;
+		}
+		else
+		{
+			scene->switchSystems_FG = false;
+		}
+	}
+	else
+	{
+		scene->switchSystems_sys = false;
+		scene->switchSystems_FG = false;
+	}
+	
 	// select directory
 	QString path = QFileDialog::getExistingDirectory(this, "Select run directory", patientDirectory);
 	if (path.isNull()) return;
@@ -2383,7 +2462,25 @@ void XRayViewer::on_ButtonLoadRunSecond_clicked()
 	//=============================================================================================
 	scene->isFramegrabber = 1; // zum Testen ohne Geraet
 	//=============================================================================================
-
+	scene->loadDefaultMeshPositionBool = true;
+	if (count_sys == 0)
+	{
+		count_FG += 1;
+		if (count_FG == 1)
+		{
+			scene->switchSystems_FG = true;
+		}
+		else
+		{
+			scene->switchSystems_FG = false;
+		}
+	}
+	else
+	{
+		scene->switchSystems_sys = false;
+		scene->switchSystems_FG = false;
+	}
+	
 	// select directory
 	QString path = QFileDialog::getExistingDirectory(this, "Select run directory", patientDirectory);
 	if (path.isNull()) return;

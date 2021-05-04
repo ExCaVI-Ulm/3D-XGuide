@@ -22,7 +22,16 @@ int SystemGeometryDefinitions::CROPPED_SIZE_Y = 1000;
 
 int SystemGeometryDefinitions::DISTANCE_SOURCE_TO_PATIENT[2] = { {810}, {765}}; // DistanceSourceToPatient in mm
 //int SystemGeometryDefinitions::DISTANCE_SOURCE_TO_PATIENT[2] = { 810, 765 }; // DistanceSourceToPatient in mm
-int SystemGeometryDefinitions::ISOCENTER_SHIFT_Z = 12; //isocenter for the lateral C-arm is shifted about 12mm away compared to frontal C-arm
+//isocenter for the lateral C-arm is shifted about 12mm away compared to frontal C-arm (as confirmed by KUGEL PHANTOM from 31.08.2018)
+int SystemGeometryDefinitions::ISOCENTER_SHIFT_X = 0;
+int SystemGeometryDefinitions::ISOCENTER_SHIFT_Y = 0;
+int SystemGeometryDefinitions::ISOCENTER_SHIFT_Z = 12;
+// For Phantom Wuerfel 20200627 experiment these values were 
+//int SystemGeometryDefinitions::ISOCENTER_SHIFT_X = -4; 
+//int SystemGeometryDefinitions::ISOCENTER_SHIFT_Y = 6;
+//int SystemGeometryDefinitions::ISOCENTER_SHIFT_Z = 11;
+
+
 //// default Tischposition for PHANTOM from 07.07.2018
 //int SystemGeometryDefinitions::TABLE_POSITION_X = -110; // lat.
 //int SystemGeometryDefinitions::TABLE_POSITION_Y = -760; // long.
@@ -37,6 +46,13 @@ int SystemGeometryDefinitions::ISOCENTER_SHIFT_Z = 12; //isocenter for the later
 int SystemGeometryDefinitions::TABLE_POSITION_X = 0; // lat.
 int SystemGeometryDefinitions::TABLE_POSITION_Y = 0; // long.
 int SystemGeometryDefinitions::TABLE_POSITION_Z = 0; //vert. = höhe
+
+// shift der Referenzkoordinatensysteme der Tischposition (DICOM header - display)
+// diff = sys-osd
+// shift = ceil(diff_min + (diff_max-diff_min))
+int SystemGeometryDefinitions::TABLE_SHIFT_CS_POSITION_X = 100; // lat.
+int SystemGeometryDefinitions::TABLE_SHIFT_CS_POSITION_Y = 988; // long.
+int SystemGeometryDefinitions::TABLE_SHIFT_CS_POSITION_Z = 956; //vert. = höhe
 
 int SystemGeometryDefinitions::FIELD_DISTANCE = 25;
 double SystemGeometryDefinitions::DETECTOR_SIZE = 174.98;	//174.98 mm - Detector size at FD = 25 cm;

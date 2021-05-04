@@ -23,10 +23,16 @@ struct SystemGeometryDefinitions {
 	static double SOURCE_DETECTOR_DISTANCE; /// im millimeters
 	//static int DISTANCE_SOURCE_TO_PATIENT; // in millimeters 
 	static int DISTANCE_SOURCE_TO_PATIENT[2]; // in millimeters 
+	static int ISOCENTER_SHIFT_X; // in millimeters
+	static int ISOCENTER_SHIFT_Y; // in millimeters
 	static int ISOCENTER_SHIFT_Z; // in millimeters 
+
 	static int DISTANCE_SOURCE_TO_PATIENT_FRONTAL; // in millimeters 
 	static int DISTANCE_SOURCE_TO_PATIENT_LATERAL; // in millimeters 
 
+	static int TABLE_SHIFT_CS_POSITION_X; // lat.
+	static int TABLE_SHIFT_CS_POSITION_Y; // long.
+	static int TABLE_SHIFT_CS_POSITION_Z; // vert.
 
 	static int TABLE_POSITION_X; // lat.
 	static int TABLE_POSITION_Y; // long.

@@ -252,6 +252,7 @@ void XRayGeometry::setTablePosition(double lateralPos, double longitudinalPos, d
 	tablePosition[0] = lateralPos;
 	tablePosition[1] = longitudinalPos;
 	tablePosition[2] = verticalPos;
+	
 }
 
 void XRayGeometry::getTablePosition(double& positionX, double& positionY, double& positionZ)
@@ -441,9 +442,17 @@ void XRayGeometry::getDetectorPosition(double& x, double& y, double& z) const
 
 void XRayGeometry::getTablePositionInWC(double& x, double& y, double& z) const
 {
+	
 	x = tablePosition[0] - SystemGeometryDefinitions::TABLE_POSITION_X;
 	y = tablePosition[1] - SystemGeometryDefinitions::TABLE_POSITION_Y;
-	z = tablePosition[2] - SystemGeometryDefinitions::TABLE_POSITION_Z; 
+	z = tablePosition[2] - SystemGeometryDefinitions::TABLE_POSITION_Z;
+	if (isFramegrabber)
+	{
+		// shift = sys-osd -> sys = osd+shift
+		x += SystemGeometryDefinitions::TABLE_SHIFT_CS_POSITION_X; // lat
+		y += SystemGeometryDefinitions::TABLE_SHIFT_CS_POSITION_Y; // long
+		z += SystemGeometryDefinitions::TABLE_SHIFT_CS_POSITION_Z; // vert		
+	}
 	
 }
 

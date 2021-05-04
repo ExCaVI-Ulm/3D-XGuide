@@ -7,6 +7,8 @@
 class vtkImageResize;
 // VTK classes
 class vtkPolyDataReader;
+class vtkSTLReader;
+class vtkPolyData;
 class vtkTransformFilter;
 class vtkPolyDataMapper;
 class vtkPolyDataNormals;
@@ -170,6 +172,8 @@ public:
 	void playReferenceStream(int framenumber, char* dir, int index); /// play content of chosen folder
 
 	bool isFramegrabber;
+	bool switchSystems_FG;
+	bool switchSystems_sys;
 	bool alreadyConstructedPipeline[3];
 	bool alreadyConstructedPipelineDICOM[3];
 	bool isRecording;
@@ -213,7 +217,7 @@ public:
 	/// set/get input file (CT or MR) in order to calculate correct mesh position in OverlayScene->AddOverlayMesh(), because for CT file with wrong spacing the mesh position has to be recalculated
 	void setMRInputFileForMesh(int meshOrientation);
 	int getMRInputFileForMesh();
-	vector<const char*> getMeshFileNames();	/// Returns the filenames of the shown mesh files
+	vector<std::string> getMeshFileNames();	/// Returns the filenames of the shown mesh files
 	void setMeshVisibility(bool visible);
 	bool getMeshVisibility();
 	void setMeshColor(double color[3], int index);
@@ -268,7 +272,7 @@ public:
 	bool biplaneSystem;
 	int frameGrabbersNumber;
 	//======================================================
-
+	
 protected:
 	/// create and connect the pipline objects
 	void setupPipeline();
@@ -302,7 +306,7 @@ protected:
 	int startClock(char* txt);
 	void stopClock(int startTime);
 	//======================================================
-
+	bool hasEnding(string const file, string const ending);
 
 private:
 	OverlayScene(int numberofChannels, int numberofWindows, int numberOfFramegrabbers);
@@ -372,8 +376,7 @@ private:
 	
 
 	//for each extra mesh	
-	vector<vtkPolyDataReader*> theMeshReaders;
-	//vector<vtkXMLPolyDataReader*> theMeshReaders;
+	vector<vtkSmartPointer<vtkPolyData>> theMeshes;
 	
 	/// one per ouput window (first index) and per mesh (second index)
 	vector<vtkTransformFilter*> theMeshTransformFilters[4];
@@ -500,7 +503,7 @@ private:
 	// overwrite first image after the geometry has changed
 	int countOverwrittenframes;
 
-	//===================================================
+	vector<std::string> meshFileNames;
 	};
 
 #endif

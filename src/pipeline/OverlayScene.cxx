@@ -82,6 +82,7 @@
 #include <vtkPNGWriter.h>
 //meshes
 #include <vtkPolyDataReader.h>
+#include <vtkSTLReader.h>
 #include <vtkTransformFilter.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkTransform.h>
@@ -171,6 +172,7 @@ OverlayScene::OverlayScene(int numberofChannels, int numberofWindows, int number
 
 	alreadyConstructedPipeline[0] = alreadyConstructedPipeline[1] = alreadyConstructedPipeline[2] = false;
 	alreadyConstructedPipelineDICOM[0] = alreadyConstructedPipelineDICOM[1] = alreadyConstructedPipelineDICOM[2] = false;
+	switchSystems_FG = switchSystems_sys = false;
 
 	setupPipeline();
 }
@@ -738,9 +740,9 @@ int OverlayScene::recognizeShift(int index) {
 	// using the position of the FD letters
 	int shiftHorizontal = 0; // - <-> +
 
-							 // ----------------------------------- ----------------------------------- 
-							 // get frame/image 
-							 // ----------------------------------- ----------------------------------- 
+	// ----------------------------------- ----------------------------------- 
+	// get frame/image 
+	// ----------------------------------- ----------------------------------- 
 	if (!theFramegrabbers[index]->GetInitialized()) {
 		canReadLayout[index] = false;
 		cout << "WARNING: No Framegrabber is detected." << endl;
@@ -778,14 +780,14 @@ int OverlayScene::recognizeShift(int index) {
 	int shiftHorizontal_limit = 20;
 	while (shiftHorizontal > shiftHorizontal_limit && pxlX > 0)
 	{
-		for (int i = 0; i < img.cols; i++) {
+	for (int i = 0; i < img.cols; i++) {
 			if ((int)img.at<uchar>(pxlX, i) > thresh) {	///gray pixel in the upper image region below patient name
 				//cout << "horizontalShift = " << i << endl;
 				shiftHorizontal = i;
 
 				break;
 			}
-		}
+	}
 		if (shiftHorizontal >= shiftHorizontal_limit)
 		{
 			pxlX -= 1;
@@ -794,12 +796,12 @@ int OverlayScene::recognizeShift(int index) {
 
 	/*for (int i = 0; i < img.cols; i++) {
 			cout << ((int)img.at<uchar>(pxlX, i)) << " ";
-		
+	
 	}*/
 
 	return shiftHorizontal;
 
-}
+	}
 
 
 
@@ -958,7 +960,7 @@ void OverlayScene::releasePipeline()
 	theMotionCorrections->Delete(); //do this first, as it has access to some other parts of the pipeline
 	theBiplaneFilter->Delete();
 
-	while (!theMeshReaders.empty()) { removeOverlayMesh(); }
+	while (!theMeshes.empty()) { removeOverlayMesh(); }
 
 	delete theRegistrationMarkers;
 
@@ -1569,6 +1571,7 @@ void OverlayScene::setNewGeometryPlay(double& primAnglePlayNew, double& secAngle
 
 void OverlayScene::playReferenceStream(int framenumber, char* dir, int index)
 {
+	alreadyConstructedPipelineDICOM[index] = false;
 	// Pipeline
 	if (!alreadyConstructedPipeline[index]) {
 		visualizeActors(index, true);
@@ -1577,8 +1580,10 @@ void OverlayScene::playReferenceStream(int framenumber, char* dir, int index)
 		if(biplaneSystem) setFilterToType("Crosscorrelation Biplane Filter");
 		alreadyConstructedPipeline[index] = true;
 
+		
+
 		// default mesh 
-		if (alreadyConstructedPipeline[0] + alreadyConstructedPipeline[1] == 1 && loadDefaultMeshPositionBool)
+		if (alreadyConstructedPipeline[0] + alreadyConstructedPipeline[1] == 1 && loadDefaultMeshPositionBool && (switchSystems_FG + switchSystems_sys == 1))
 		{
 			if (orientation == 0)	loadDefaultMeshPosition(MR_PHILIPS);
 			if (orientation == 1)	loadDefaultMeshPosition(MR_ITK);	// correct orientation AP is needed for correct calculation and display of the angles
@@ -1626,6 +1631,8 @@ void OverlayScene::playReferenceStream(int framenumber, char* dir, int index)
 	theXRAYReaders[index]->ReadGeometryFramegrabber(primAngleRefNew[index], secAngleRefNew[index], longRefNew[index], latRefNew[index], HoeheRefNew[index], SIDRefNew[index], mmPerPxlRefNew[index], FDRefNew[index], SODRefNew[index]);
 	if (SODRefNew[index] == SystemGeometryDefinitions::DISTANCE_SOURCE_TO_PATIENT[1])
 	{
+		latRefNew[index] += SystemGeometryDefinitions::ISOCENTER_SHIFT_X;
+		longRefNew[index] += SystemGeometryDefinitions::ISOCENTER_SHIFT_Y;
 		HoeheRefNew[index] += SystemGeometryDefinitions::ISOCENTER_SHIFT_Z;
 	}
 
@@ -2306,7 +2313,7 @@ void OverlayScene::setBiplaneGeometry(unsigned int streamNumber, int SID, int so
 	geometry->setTablePosition((double)lateralPos, (double)longitudinalPos, (double)verticalPos);
 	geometry->setParameters(angles, SID, sourcePatDist);
 	geometry->setMillimeterToPixelScaling(mmPerPxl);
-	if (alreadyConstructedPipelineDICOM[0] + alreadyConstructedPipelineDICOM[1] == 1 && loadDefaultMeshPositionBool)
+	if (alreadyConstructedPipelineDICOM[0] + alreadyConstructedPipelineDICOM[1] == 1 && loadDefaultMeshPositionBool && (switchSystems_FG + switchSystems_sys == 1))
 	{
 		SystemGeometryDefinitions::TABLE_POSITION_X = lateralPos; // lat.
 		SystemGeometryDefinitions::TABLE_POSITION_Y = longitudinalPos; // long.
@@ -2370,11 +2377,11 @@ void OverlayScene::setGeometryFromFramegrabber(unsigned int streamNumber, int SI
 		theBiplaneGeometry.secondSystem.setMillimeterToPixelScaling(mmPerPxl);
 		theBiplaneGeometry.secondSystem.setParameters(angles, SID, SODRefNew[streamNumber]);
 	}
-	if (alreadyConstructedPipeline[0] + alreadyConstructedPipeline[1] == 1 && loadDefaultMeshPositionBool)
+	if (alreadyConstructedPipeline[0] + alreadyConstructedPipeline[1] == 1 && loadDefaultMeshPositionBool && (switchSystems_FG + switchSystems_sys == 1))
 	{
-		SystemGeometryDefinitions::TABLE_POSITION_X = lateralPos; // lat.
-		SystemGeometryDefinitions::TABLE_POSITION_Y = longitudinalPos; // long.
-		SystemGeometryDefinitions::TABLE_POSITION_Z = 0; //vert. = nicht die h�he, die soll 0 bleiben
+		SystemGeometryDefinitions::TABLE_POSITION_X = lateralPos + SystemGeometryDefinitions::TABLE_SHIFT_CS_POSITION_X; // lat.
+		SystemGeometryDefinitions::TABLE_POSITION_Y = longitudinalPos + SystemGeometryDefinitions::TABLE_SHIFT_CS_POSITION_Y; // long.
+		SystemGeometryDefinitions::TABLE_POSITION_Z = verticalPos + SystemGeometryDefinitions::TABLE_SHIFT_CS_POSITION_Z; //vert. = nicht die h�he, die soll 0 bleiben
 
 	}
 	setDICOMAnglesToWindowRef(streamNumber, primAngle, secAngle);
@@ -2624,6 +2631,8 @@ void OverlayScene::setFramegrabberGeometryBiplaneLive(int index)
 		);
 		theBiplaneGeometry.secondSystem.setIsFramegrabber(isFramegrabber);
 		mmPerPxlOld = theBiplaneGeometry.secondSystem.getMillimeterToPixelScalingOld();
+		lateralPos += SystemGeometryDefinitions::ISOCENTER_SHIFT_X;
+		longitudinalPos += SystemGeometryDefinitions::ISOCENTER_SHIFT_Y;
 		verticalPos += SystemGeometryDefinitions::ISOCENTER_SHIFT_Z;
 		theBiplaneGeometry.secondSystem.setTablePosition((double)lateralPos, (double)longitudinalPos, (double)verticalPos);
 		theBiplaneGeometry.secondSystem.setMillimeterToPixelScaling(mmPerPxl);
@@ -2722,6 +2731,8 @@ void OverlayScene::setFramegrabberGeometry(int index, int SID, double primAngle,
 
 	if (index == 1)
 	{
+		lateralPos += SystemGeometryDefinitions::ISOCENTER_SHIFT_X;
+		longitudinalPos += SystemGeometryDefinitions::ISOCENTER_SHIFT_Y;
 		verticalPos += SystemGeometryDefinitions::ISOCENTER_SHIFT_Z;
 	}
 
@@ -2814,6 +2825,8 @@ void OverlayScene::setFramegrabberGeometryLive(int index)
 
 	if (index == 1)
 	{
+		lateralPos += SystemGeometryDefinitions::ISOCENTER_SHIFT_X;
+		longitudinalPos += SystemGeometryDefinitions::ISOCENTER_SHIFT_Y;
 		verticalPos += SystemGeometryDefinitions::ISOCENTER_SHIFT_Z;
 	}
 
@@ -3437,7 +3450,7 @@ void OverlayScene::setInputToFile(const char* file, int streamNumber)
 
 		alreadyConstructedPipelineDICOM[streamNumber] = true;
 		// default mesh 
-		if (alreadyConstructedPipelineDICOM[0] + alreadyConstructedPipelineDICOM[1] == 1)
+		if (alreadyConstructedPipelineDICOM[0] + alreadyConstructedPipelineDICOM[1] == 1 && loadDefaultMeshPositionBool && (switchSystems_FG + switchSystems_sys == 1))
 		{
 			if (orientation == 0)	loadDefaultMeshPosition(MR_PHILIPS);
 			if (orientation == 1)	loadDefaultMeshPosition(MR_ITK);	// correct orientation AP is needed for correct calculation and display of the angles
@@ -3650,33 +3663,57 @@ int OverlayScene::getMRInputFileForMesh()
 	return orientation;
 }
 
+
+bool OverlayScene::hasEnding(string const file, string const ending) 
+{
+	std::string end;
+	std::string fn;
+	if (file.length() >= ending.length()) {
+		return (0 == file.compare(file.length() - ending.length(), ending.length(), ending));
+	}
+	else {
+		return false;
+	}
+};
+
 void OverlayScene::addOverlayMesh(string file)
 {
+	vtkSmartPointer<vtkPolyData> data = vtkSmartPointer<vtkPolyData>::New();
+	if (hasEnding(file.c_str(), "stl")) {
+		vtkSmartPointer<vtkSTLReader> meshReader = vtkSmartPointer<vtkSTLReader>::New();
+		meshReader->SetFileName(file.c_str());
+		meshReader->Update();
+		data = meshReader->GetOutput();
+	}
+	else if (hasEnding(file.c_str(), "vtk")) {
+		vtkSmartPointer<vtkPolyDataReader> meshReader = vtkSmartPointer<vtkPolyDataReader>::New();
+		meshReader->SetFileName(file.c_str());
+		meshReader->Update();
+		data = meshReader->GetOutput();
+	}
+	// save mesh name to list
+	meshFileNames.push_back(file.c_str());
 	
-	vtkPolyDataReader* meshReader = vtkPolyDataReader::New();
-	theMeshReaders.push_back(meshReader);
-	meshReader->SetFileName(file.c_str());
-	//meshReader->Print(cout);
-	meshReader->Update();
-	vtkPolyData* data = meshReader->GetOutput();
+	// save mesh to list
+	theMeshes.push_back(data);
 
+	double reg[3];
+	theMRVisualizer->getImagePositionPatient(reg);
 
-		double reg[3];
-		theMRVisualizer->getImagePositionPatient(reg);
+	double bounds[6], position[3];
+	theMRVisualizer->getVolumeBounds(bounds);
+	double spacing = theMRVisualizer->getSliceSpacing();
 
-		double bounds[6], position[3];
-		theMRVisualizer->getVolumeBounds(bounds);
-		double spacing = theMRVisualizer->getSliceSpacing();
+	position[0] = reg[0] + (bounds[1] - bounds[0]) / 2.0;
+	position[1] = reg[1] + (bounds[3] - bounds[2]) / 2.0;
+	position[2] = -reg[2] - spacing*(bounds[5] - bounds[4]) / 2.0;
 
-		position[0] = reg[0] + (bounds[1] - bounds[0]) / 2.0;
-		position[1] = reg[1] + (bounds[3] - bounds[2]) / 2.0;
-		position[2] = -reg[2] - spacing*(bounds[5] - bounds[4]) / 2.0;
-
-		for (int i = 0; i < (outputWindows+1); ++i) { // for each window
+	for (int i = 0; i < (outputWindows+1); ++i) { // for each window
 
 		vtkTransformFilter* filter = vtkTransformFilter::New();
 		theMeshTransformFilters[i].push_back(filter);
-		filter->SetInputConnection(meshReader->GetOutputPort());
+		//filter->SetInputConnection(meshReader->GetOutputPort());
+		filter->SetInputData(data);
 		filter->SetTransform(theRegistrationTransformers[i]);
 
 		vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
@@ -3689,35 +3726,35 @@ void OverlayScene::addOverlayMesh(string file)
 		actor->GetProperty()->SetColor(meshColor);
 		actor->GetProperty()->SetOpacity(meshOpacity);
 
-			if (orientation == 3)
-			{
-				actor->SetPosition(position);	// shifted origin+reg
-			}
-
-			theMeshAssemblies[i]->AddPart(actor);
-		}	
-
-		if (theMeshReaders.size() == 1)
+		if (orientation == 3)
 		{
-			if (orientation == 0)
-			{
-				loadDefaultMeshPosition(MR_PHILIPS);	// correct orientation AP is needed for correct calculation and display of the angles
-			}
-
-			if (orientation == 1)
-			{
-				loadDefaultMeshPosition(MR_ITK);	// correct orientation AP is needed for correct calculation and display of the angles
-			}
-			if (orientation == 2)
-			{
-				loadDefaultMeshPosition(CT_PHILIPS);	// correct orientation AP is needed for correct calculation and display of the angles
-			}
-			if (orientation == 3)
-			{
-				loadDefaultMeshPosition(CT_ITK);	// correct orientation AP is needed for correct calculation and display of the angles
-			}
-			
+			actor->SetPosition(position);	// shifted origin+reg
 		}
+
+		theMeshAssemblies[i]->AddPart(actor);
+	}	
+
+	if (theMeshes.size() == 1)
+	{
+		if (orientation == 0)
+		{
+			loadDefaultMeshPosition(MR_PHILIPS);	// correct orientation AP is needed for correct calculation and display of the angles
+		}
+
+		if (orientation == 1)
+		{
+			loadDefaultMeshPosition(MR_ITK);	// correct orientation AP is needed for correct calculation and display of the angles
+		}
+		if (orientation == 2)
+		{
+			loadDefaultMeshPosition(CT_PHILIPS);	// correct orientation AP is needed for correct calculation and display of the angles
+		}
+		if (orientation == 3)
+		{
+			loadDefaultMeshPosition(CT_ITK);	// correct orientation AP is needed for correct calculation and display of the angles
+		}
+			
+	}
 		
 
 	/*	vtkTransform* t = vtkTransform::New();
@@ -4029,18 +4066,19 @@ void OverlayScene::updateMeshPositionsFromWindow(int windowNumber) {
 
 void OverlayScene::removeOverlayMesh(int meshNumber)
 {
-	if (theMeshReaders.empty()) return; //nothing to remove
+	if (theMeshes.empty()) return; //nothing to remove
 
 	if (meshNumber == -1) meshNumber = theMeshActors[0].size() - 1; // -1 is a flag to delete the mesh which was added last
 	if (meshNumber < 0 || meshNumber >= theMeshActors[0].size()) return; // invalid number
 
 
-	vtkPolyDataReader* reader = theMeshReaders[meshNumber];
-	reader->Delete();
+	//vtkSmartPointer<vtkPolyDataReader> reader = theMeshReaders[meshNumber];
+	//reader->Delete();
+	meshFileNames.erase(meshFileNames.begin() + meshNumber);
 
-	vector<vtkPolyDataReader*>::iterator itReader = theMeshReaders.begin();
+	vector<vtkSmartPointer<vtkPolyData>>::iterator itReader = theMeshes.begin();
 	itReader += meshNumber;
-	theMeshReaders.erase(itReader);
+	theMeshes.erase(itReader);
 
 	for (unsigned int i = 0; i < (outputWindows+1); ++i) {
 
@@ -4074,13 +4112,9 @@ void OverlayScene::removeOverlayMesh(int meshNumber)
 	renWinMainXRAY->Render();
 }
 
-vector<const char*> OverlayScene::getMeshFileNames()
+vector<std::string> OverlayScene::getMeshFileNames()
 {
-	vector<const char*> fileNames;
-	for (unsigned int i = 0; i < theMeshReaders.size(); ++i) {
-		fileNames.push_back(theMeshReaders[i]->GetFileName());
-	}
-	return fileNames;
+	return meshFileNames;
 }
 
 
@@ -4332,7 +4366,7 @@ SceneLabeling* OverlayScene::getRegistrationMarkers()
 
 void OverlayScene::do3d3dRegistration()
 {
-
+	ofstream fl;
 	if (theMarkerPoints[2]->getNumberOfPoints() != theRegistrationMarkers->getNumberOfPoints()) return;
 
 	// Make mesh assembly to id, because the registration marker
@@ -4362,8 +4396,11 @@ void OverlayScene::do3d3dRegistration()
 	transform->SetModeToRigidBody();
 	transform->Update();
 
-
+	////save transformed 3d source points and project them onto detectors:
+	//fl.open("transformed3DsourcePoints.txt", std::ofstream::out | std::ofstream::trunc);
+	fl.open("transformedProjected3DsourcePoints.txt", std::ofstream::out | std::ofstream::trunc);
 	double p1[3];
+	double _pt2d_1[2], _pt2d_2[2];
 	for (int i = 0; i < theRegistrationMarkers->getNumberOfPoints(); ++i) {
 		sourcePoints->GetPoint(i, p1);
 		double pos1[4] = {
@@ -4372,12 +4409,20 @@ void OverlayScene::do3d3dRegistration()
 			p1[2],
 			1
 		};	
+		transform->GetMatrix()->MultiplyPoint(pos1, pos1);
+		//fl << "x: " << pos1[0] << " ; y: " << pos1[1] << " ; z: " << pos1[2] << endl;
+		fl << pos1[0] << " " << pos1[1] << " " << pos1[2] << endl;
 
+		theBiplaneGeometry.firstSystem.project3dPointToDetectorCoordinates(pos1, _pt2d_1);
+		theBiplaneGeometry.secondSystem.project3dPointToDetectorCoordinates(pos1, _pt2d_2);
+		fl << _pt2d_1[0] << " " << _pt2d_1[1] << endl;
+		fl << _pt2d_2[0] << " " << _pt2d_2[1] << endl;
 	}
+	fl.close();
 
 	// set in 3D window and update other views
 	theMeshAssemblies[2]->PokeMatrix(transform->GetMatrix());
-	updateMeshPositionsFromWindow(2);
+	updateMeshPositionsFromWindow(2);	
 
 	transform->Delete();
 	sourcePoints->Delete();

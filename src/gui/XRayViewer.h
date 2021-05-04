@@ -54,6 +54,8 @@ public:
 	void clearTextActors(int index);
 	void enableMarkerMenu();
 
+	void resetCounters(bool system);
+
 	//std::vector<int> GeometryLiveNew;
 	//std::vector<int> GeometryLive;
 
@@ -195,6 +197,9 @@ private:
 
 	int startClock(char* txt);
 	void stopClock(int startTime);
+
+	int count_FG;
+	int count_sys;
 	//===========================================================
 };
 

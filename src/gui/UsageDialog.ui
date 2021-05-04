@@ -39,7 +39,7 @@ How to start:
 If you have access to provided test data ('PHANTOM' folder), proceed like this:
 - go to 'File | Load scene...' and choose .ini configuration file ('scene\AP_90.ini') to load complete 3D scene
 - use the options in the 'Display' menu
-- press 'Registration' button in the 'Registration' panel of the 'NavigationGUI&quot; to perform 3D-3D registration
+- press 'Registration' button in the 'Registration' panel of the '3D-XGuide&quot; to perform 3D-3D registration
 - press 'Load Run' button in 'Reference 1' and/or 'Reference 2' windows to choose any of available XR image series from folder 'XRAY'
 
 Alternatively you can load all data separately:

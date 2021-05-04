@@ -521,15 +521,13 @@ void MainWindow::saveScene(const char* file)
 		geometry->mainSystem.saveParametersAsAnglesAndDistancesFile(qPrintable(saveFile));
 		settings.setValue("SID_MAIN", geometry->mainSystem.getSourceDetectorDistance());*/
 
-	}	
+	}		
 
-	
-
-	vector<const char*> meshFiles = theOverlayScene->getMeshFileNames();
+	vector<std::string> meshFiles = theOverlayScene->getMeshFileNames();
 	settings.setValue("MESH_SIZE", meshFiles.size());
 	QString param("MESH_%1");
 	for (unsigned int i = 0; i < meshFiles.size(); ++i) {
-		settings.setValue(param.arg(i), QString(meshFiles[i]));
+		settings.setValue(param.arg(i), QString(meshFiles[i].c_str()));
 
 		double c[3];
 		theOverlayScene->getMeshColor(c, i);
@@ -648,7 +646,8 @@ void MainWindow::loadScene(const char* file)
 		
 	if (!frameGrabber)
 	{
-		theOverlayScene->alreadyConstructedPipelineDICOM[0] = theOverlayScene->alreadyConstructedPipelineDICOM[1] = false; // to update 3D reconstruction depending on initial table pos		
+		theOverlayScene->alreadyConstructedPipelineDICOM[0] = theOverlayScene->alreadyConstructedPipelineDICOM[1] = false; // to update 3D reconstruction depending on initial table pos
+
 		if (!RAWstrings.empty() && (RAWstrings[0] != NULL && RAWstrings[0][0] != '\0'))
 			cout << "loading XRAYs... " << endl;
 			{
@@ -658,7 +657,8 @@ void MainWindow::loadScene(const char* file)
 					double primAngle, secAngle;
 
 					value = settings.value(frame.arg(i)).toInt();
-					//theXRayViewer->setSliderValue(i, value);					
+					//theXRayViewer->setSliderValue(i, value);	
+					theXRayViewer->resetCounters(true); // 0 - for FG; 1 - for system
 					theOverlayScene->setInputToFile(RAWstrings[i], i);	//HERE correct
 					theXRayViewer->activateGui(value, (char*)strings[i].c_str(), i);
 					theOverlayScene->getDICOMAnglesToWindowRef(i, primAngle, secAngle);
@@ -680,9 +680,10 @@ void MainWindow::loadScene(const char* file)
 				stringsNew.push_back(strings[i].substr(0, strings[i].find("\\", 0)));
 										
 				value = settings.value(frame.arg(i)).toInt();
-				theXRayViewer->activateGui(value, (char*)stringsNew[i].c_str(), i);
-				//theXRayViewer->setSliderValue(i, value);					
+				theXRayViewer->resetCounters(false); // 0 - for FG; 1 - for system				
+				//theXRayViewer->setSliderValue(i, value);				
 				theOverlayScene->playReferenceStream(value, (char*)stringsNew[i].c_str(), i);
+				theXRayViewer->activateGui(value, (char*)stringsNew[i].c_str(), i);
 				theXRayViewer->clearTextActors(i);
 				theOverlayScene->getDICOMAnglesToWindowRef(i, primAngle, secAngle);
 				theXRayViewer->displayAngleInWindow(i, primAngle, secAngle);

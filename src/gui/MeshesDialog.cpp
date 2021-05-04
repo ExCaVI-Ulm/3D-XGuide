@@ -47,7 +47,7 @@ void MeshesDialog::update()
 
 void MeshesDialog::on_addMeshButton_clicked()
 {
-	QString fileFormats("Mesh File (*.vtk)");
+	QString fileFormats({ "Mesh File (*.vtk);; Mesh File (*.stl)" });
 	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select overlay file(s)", lastDirectory, fileFormats);
 	if (fileNames.empty()) return; // user cancelled
 
@@ -78,13 +78,13 @@ void MeshesDialog::on_removeMeshButton_clicked()
 
 void MeshesDialog::updateList()
 {
-	vector<const char*> fileNamesMeshes = scene->getMeshFileNames();
+	vector<std::string> fileNamesMeshes = scene->getMeshFileNames();
 
 	// copy fileNames to QStringList
 	QStringList files;
 	for (unsigned int i = 0; i < fileNamesMeshes.size(); ++i)
 	{ 
-		files << fileNamesMeshes[i];
+		files << fileNamesMeshes[i].c_str();
 		//files << QString::fromStdString(fileNamesMeshes[i]);
 	}
 
