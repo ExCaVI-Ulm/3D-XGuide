@@ -1048,7 +1048,7 @@ void XRayViewer::Execute(vtkObject *caller, unsigned long eventId, void *callDat
 						displayAngleInWindow(2, Yaw, Roll);
 					}
 
-					if (scene->getMRInputFileForMesh() == 2)
+					if (scene->getMRInputFileForMesh() == 2 || scene->getMRInputFileForMesh() == 4)
 					{
 						Yaw = (atan2(-matrix[2][0], matrix[0][0])) * 180 / PI;
 						Pitch = (asin(matrix[1][0])) * 180 / PI;
@@ -1811,9 +1811,10 @@ void XRayViewer::on_actionLoadDefaultMeshPosition_triggered()
 {
 	QStringList MESH;
 	//MESH << "PHILIPS MRI" << "ITK-SNAP for MRI" << "PHILIPS CT" << "ITK-SNAP for CT"; // not supported: << "saggital";
-	MESH << "PHILIPS MRI" << "PHILIPS CT";
+	MESH << "PHILIPS MRI coronal" << "PHILIPS MRI axial" << "PHILIPS CT";
 	QString orientation = QInputDialog::getItem(this, "Load default mesh position", "For which volume mesh was exported", MESH, 0, false);
-	if (orientation == "PHILIPS MRI") scene->loadDefaultMeshPosition(OverlayScene::MR_PHILIPS);
+	if (orientation == "PHILIPS MRI coronal") scene->loadDefaultMeshPosition(OverlayScene::MR_PHILIPS);
+	if (orientation == "PHILIPS MRI axial") scene->loadDefaultMeshPosition(OverlayScene::MR_PHILIPS_ax);
 	if (orientation == "ITK-SNAP for MRI") scene->loadDefaultMeshPosition(OverlayScene::MR_ITK);
 	if (orientation == "PHILIPS CT") scene->loadDefaultMeshPosition(OverlayScene::CT_PHILIPS);
 	if (orientation == "ITK-SNAP for CT") scene->loadDefaultMeshPosition(OverlayScene::CT_ITK);

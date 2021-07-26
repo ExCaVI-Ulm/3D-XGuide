@@ -97,7 +97,7 @@ public:
 	static OverlayScene* GetInstance();
 
 	~OverlayScene();
-	enum MESH { MR_PHILIPS, MR_ITK, CT_PHILIPS, CT_ITK };
+	enum MESH { MR_PHILIPS, MR_ITK, CT_PHILIPS, CT_ITK, MR_PHILIPS_ax};
 
 public:
 

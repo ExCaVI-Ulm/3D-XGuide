@@ -40,7 +40,8 @@ public:
 
 private slots:
 	//menu "file"
-	void on_actionLoad3DMRIDatasetPHILIPS_triggered();
+	void on_action3DMRI_coronal_triggered();
+	void on_action3DMRI_axial_triggered();
 	void on_actionSet_slice_spacing_manually_triggered();
 	void on_actionLoad3DMRIDataset_triggered();
 	/*void on_action3DMRI_coronal_triggered();

@@ -298,11 +298,11 @@ void DICOMVisualizer::setCTInputFile(string theFilename, string theFoldername, i
 
 	for (int i = 0; i < 3; ++i) {
 
-		if (orientation == 0 || orientation == 2)
+		if (orientation == 0 || orientation == 2 || orientation == 4)
 		{
 			PhilipsMesh = true;
 			reslices[i]->SetResliceAxesDirectionCosines(sliceOrientationsPhilips[i]);
-			if (orientation == 0)
+			if (orientation == 0 || orientation == 4)
 			{
 				slice_spacing_for_registration = 1.0;
 			}

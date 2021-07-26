@@ -221,6 +221,7 @@ void MainWindow::updatePositionFromGui()
 	case 0:
 	case 2:
 	case 3:
+	case 4:
 		viewer->setCTSliceIntersectionPointLocal(pos);
 		break;
 	default:
@@ -263,7 +264,7 @@ void MainWindow::on_actionLoad3DMRIDataset_triggered()
 }
 
 
-void MainWindow::on_actionLoad3DMRIDatasetPHILIPS_triggered()
+void MainWindow::on_action3DMRI_coronal_triggered()
 {
 	QString fileFormats("Image files (*.dcm);; All files (*)");
 	QString FileName = QFileDialog::getOpenFileName(this,
@@ -282,6 +283,28 @@ void MainWindow::on_actionLoad3DMRIDatasetPHILIPS_triggered()
 	updateGUI();
 
 }
+
+void MainWindow::on_action3DMRI_axial_triggered()
+{
+	QString fileFormats("Image files (*.dcm);; All files (*)");
+	QString FileName = QFileDialog::getOpenFileName(this,
+		"Select 3D MRI Dataset", "b:/NAVIGATION/SVT ABLATION/", fileFormats);
+	QDir d = QFileInfo(FileName).absoluteDir();
+	QString absolute = d.absolutePath();
+	if (FileName.isNull()) return;
+
+	MeshOrientation = OverlayScene::MR_PHILIPS_ax;
+	theOverlayScene->SetCTVisualizer(qPrintable(FileName), qPrintable(absolute), MeshOrientation);
+	reloadFile = qPrintable(FileName);
+	reloadDir = qPrintable(absolute);
+	meshesDialog->activateAddMeshButton(true);
+	//theOverlayScene->setMRInputFileForMesh(MeshOrientation);
+
+	updateGUI();
+
+}
+
+
 
 void MainWindow::on_actionSet_slice_spacing_manually_triggered()
 {
@@ -780,6 +803,12 @@ void MainWindow::loadScene(const char* file)
 			reloadDir = MRVolumeDirString;
 			MeshOrientation = 3;
 			break;
+		case 4:
+			theOverlayScene->SetCTVisualizer(MRVolumeFileString, MRVolumeDirString, orientation);
+			reloadFile = MRVolumeFileString;
+			reloadDir = MRVolumeDirString;
+			MeshOrientation = 4;
+			break;
 		default:
 				return;
 
@@ -867,9 +896,10 @@ void MainWindow::loadScene(const char* file)
 
 		QStringList MESH;
 		//MESH << "PHILIPS MRI" << "ITK-SNAP for MRI" << "PHILIPS CT" << "ITK-SNAP for CT"; // not supported: << "saggital";
-		MESH << "PHILIPS MRI" << "PHILIPS CT";
+		MESH << "PHILIPS MRI" << "PHILIPS MRI axial" << "PHILIPS CT";
 		QString orientation = QInputDialog::getItem(this, "Load default mesh position", "For which volume mesh was exported", MESH, 0, false);
-		if (orientation == "PHILIPS MRI") theOverlayScene->loadDefaultMeshPosition(OverlayScene::MR_PHILIPS);
+		if (orientation == "PHILIPS MRI coronal") theOverlayScene->loadDefaultMeshPosition(OverlayScene::MR_PHILIPS);
+		if (orientation == "PHILIPS MRI axial") theOverlayScene->loadDefaultMeshPosition(OverlayScene::MR_PHILIPS_ax);
 		if (orientation == "ITK-SNAP for MRI") theOverlayScene->loadDefaultMeshPosition(OverlayScene::MR_ITK);
 		if (orientation == "PHILIPS CT") theOverlayScene->loadDefaultMeshPosition(OverlayScene::CT_PHILIPS);
 		if (orientation == "ITK-SNAP for CT") theOverlayScene->loadDefaultMeshPosition(OverlayScene::CT_ITK);

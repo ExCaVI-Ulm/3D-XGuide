@@ -1589,7 +1589,7 @@ void OverlayScene::playReferenceStream(int framenumber, char* dir, int index)
 			if (orientation == 1)	loadDefaultMeshPosition(MR_ITK);	// correct orientation AP is needed for correct calculation and display of the angles
 			if (orientation == 2)	loadDefaultMeshPosition(CT_PHILIPS);	// correct orientation AP is needed for correct calculation and display of the angles
 			if (orientation == 3)	loadDefaultMeshPosition(CT_ITK);	// correct orientation AP is needed for correct calculation and display of the angles				
-
+			if (orientation == 4)	loadDefaultMeshPosition(MR_PHILIPS_ax);
 			/*theXRayViewer->stackClear();
 
 			double previousMeshMatrix[4][4];
@@ -3456,7 +3456,7 @@ void OverlayScene::setInputToFile(const char* file, int streamNumber)
 			if (orientation == 1)	loadDefaultMeshPosition(MR_ITK);	// correct orientation AP is needed for correct calculation and display of the angles
 			if (orientation == 2)	loadDefaultMeshPosition(CT_PHILIPS);	// correct orientation AP is needed for correct calculation and display of the angles
 			if (orientation == 3)	loadDefaultMeshPosition(CT_ITK);	// correct orientation AP is needed for correct calculation and display of the angles				
-
+			if (orientation == 4)	loadDefaultMeshPosition(MR_PHILIPS_ax);
 
 		}
 	}
@@ -3634,6 +3634,11 @@ void OverlayScene::loadDefaultMeshPosition(MESH defaultOrientation)
 		t->RotateX(180);
 		break;
 
+	case MR_PHILIPS_ax:
+		/// here is the case with converted XML
+		t->RotateX(-90);
+		break;
+
 	case CT_ITK:		
 		/////here is the case for the ITK-SNAP mesh
 		t->RotateX(-90);
@@ -3752,6 +3757,10 @@ void OverlayScene::addOverlayMesh(string file)
 		if (orientation == 3)
 		{
 			loadDefaultMeshPosition(CT_ITK);	// correct orientation AP is needed for correct calculation and display of the angles
+		}
+		if (orientation == 4)
+		{
+			loadDefaultMeshPosition(MR_PHILIPS_ax);	// correct orientation AP is needed for correct calculation and display of the angles
 		}
 			
 	}
