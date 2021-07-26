@@ -896,7 +896,7 @@ void MainWindow::loadScene(const char* file)
 
 		QStringList MESH;
 		//MESH << "PHILIPS MRI" << "ITK-SNAP for MRI" << "PHILIPS CT" << "ITK-SNAP for CT"; // not supported: << "saggital";
-		MESH << "PHILIPS MRI" << "PHILIPS MRI axial" << "PHILIPS CT";
+		MESH << "PHILIPS MRI coronal" << "PHILIPS MRI axial" << "PHILIPS CT";
 		QString orientation = QInputDialog::getItem(this, "Load default mesh position", "For which volume mesh was exported", MESH, 0, false);
 		if (orientation == "PHILIPS MRI coronal") theOverlayScene->loadDefaultMeshPosition(OverlayScene::MR_PHILIPS);
 		if (orientation == "PHILIPS MRI axial") theOverlayScene->loadDefaultMeshPosition(OverlayScene::MR_PHILIPS_ax);
