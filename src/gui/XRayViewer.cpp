@@ -864,6 +864,10 @@ void XRayViewer::Execute(vtkObject *caller, unsigned long eventId, void *callDat
 			popupMenu->addAction("Remove nearest template");
 			popupMenu->addAction("Remove all templates");
 			popupMenu->addAction("Manually set motion compensation here");
+			popupMenu->addAction("Set reference frame for DL-based motion compensation");
+			popupMenu->addAction("Reset reference frame for DL-based motion compensation");
+			popupMenu->addAction("Remove reference frame for DL-based motion compensation");
+
 			
 		}
 
@@ -938,6 +942,21 @@ void XRayViewer::Execute(vtkObject *caller, unsigned long eventId, void *callDat
 
 			if (action->text() == "Manually set motion compensation here") {
 				scene->setTemplatePositionForMotionCompensation(2, pos);
+				actionIndex = 0;
+			}
+
+			if (action->text() == "Set reference frame for DL-based motion compensation") {
+				scene->setReferenceFrameForMotionCompensation(2, true);
+				actionIndex = 0;
+			}
+
+			if (action->text() == "Reset reference frame for DL-based motion compensation") {
+				scene->resetReferenceFrameForMotionCompensation(2, true);
+				actionIndex = 0;
+			}
+
+			if (action->text() == "Remove reference frame for DL-based motion compensation") {
+				scene->removeReferenceFrameForMotionCompensation(2, true);
 				actionIndex = 0;
 			}
 

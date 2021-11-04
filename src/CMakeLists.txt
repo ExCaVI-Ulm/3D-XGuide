@@ -57,6 +57,10 @@ include(${DICOM_USE_FILE})
 endif ()
 set(VTK_DICOM_LIBRARIES vtkDICOM)
 
+#set(CURL_DIR "b:/NAVIGATION/SW/vcpkg/installed/x86-windows/share/curl")
+
+find_package(CURL CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 ###########################################################
 # add remove files here
 
@@ -153,6 +157,7 @@ set(AlgorithmsFiltersSrcs
   algorithms/filters/PointListBasedFilter.cxx
   algorithms/filters/CrosscorrelationFilter.cxx
   algorithms/filters/CrosscorrelationMotionCorrectionFilter.cxx
+  algorithms/filters/DeepLearningMotionCorrectionFilter.cxx
   
 )
 
@@ -165,6 +170,7 @@ set(AlgorithmsFiltersHeaders
   algorithms/filters/PointListBasedFilter.h
   algorithms/filters/CrosscorrelationFilter.h
   algorithms/filters/CrosscorrelationMotionCorrectionFilter.h
+  algorithms/filters/DeepLearningMotionCorrectionFilter.h
   
 )
 
@@ -174,6 +180,7 @@ set(AlgorithmsGuiSrcs
   algorithms/gui/MotionCorrectionFilterWidget.cxx
   algorithms/gui/CrosscorrelationFilterWidget.cxx
   algorithms/gui/PreprocessingFilterWidget.cxx
+  algorithms/gui/DLFilterWidget.cxx
 
 )
 
@@ -182,6 +189,7 @@ set(AlgorithmsGuiHeaders
   algorithms/gui/MotionCorrectionFilterWidget.h
   algorithms/gui/CrosscorrelationFilterWidget.h
   algorithms/gui/PreprocessingFilterWidget.h
+  algorithms/gui/DLFilterWidget.h
 
 )
 
@@ -189,6 +197,7 @@ set(AlgorithmsGuiUIs
   algorithms/gui/MotionCorrectionFilterWidget.ui
   algorithms/gui/CrosscorrelationFilterWidget.ui
   algorithms/gui/PreprocessingFilterWidget.ui
+  algorithms/gui/DLFilterWidget.ui
 )
 
 
@@ -284,6 +293,6 @@ ENDIF (${CMAKE_BUILD_TOOL} MATCHES "devenv")
 
 add_executable(${CMAKE_PROJECT_NAME} WIN32 ${Srcs} ${Headers})
 
-target_link_libraries(${CMAKE_PROJECT_NAME} ${VTK_LIBRARIES} ${OpenCV_LIBS} ${QT_LIBRARIES} Qt5::Gui Qt5::Core Qt5::Widgets
-					  ${GDCM_LIBS} ${VTK_DICOM_LIBRARIES})
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE nlohmann_json nlohmann_json::nlohmann_json ${VTK_LIBRARIES} ${OpenCV_LIBS} ${QT_LIBRARIES} Qt5::Gui Qt5::Core Qt5::Widgets
+					  ${GDCM_LIBS} ${VTK_DICOM_LIBRARIES} CURL::libcurl)
 

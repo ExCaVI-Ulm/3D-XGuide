@@ -205,6 +205,9 @@ public:
 	void unsetAllTemplates(unsigned int streamNumber);
 	/// Manually set the motions compensation position (this can be used if the tracking goes bad).
 	void setTemplatePositionForMotionCompensation(unsigned int streamNumber, double worldCoords[2]);
+	void setReferenceFrameForMotionCompensation(unsigned int streamNumber, bool set);
+	void resetReferenceFrameForMotionCompensation(unsigned int streamNumber, bool set);
+	void removeReferenceFrameForMotionCompensation(unsigned int streamNumber, bool set);
 
 	void setDICOMAnglesToWindow(double primAngle, double secAngle);
 	void getDICOMAnglesToWindow(double& primAngle, double& secAngle);

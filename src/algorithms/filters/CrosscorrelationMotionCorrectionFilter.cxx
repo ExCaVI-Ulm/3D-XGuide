@@ -3,7 +3,9 @@
 #include <vtkImageData.h>
 #include "highgui.h"
 #include <opencv2/imgproc.hpp>
+
 #include "CrosscorrelationFilterWidget.h"
+
 
 using namespace std;
 
@@ -14,6 +16,7 @@ CrosscorrelationMotionCorrectionFilter::CrosscorrelationMotionCorrectionFilter()
 	motionPositionSetManually = false;
 	manualMotionPosition[0] = manualMotionPosition[1] = 0.0;
 	pointUsedForManualPosition = -1;
+
 
 }
 
@@ -36,6 +39,7 @@ void CrosscorrelationMotionCorrectionFilter::ComputeMotion(vtkImageData* image, 
 
 	// create OpenCV matrix of the vtkImageData without(!) copying the content
 	cv::Mat img(heightIm, widthIm, CV_8U, image->GetScalarPointer());
+
 	// create OpenCV matrix of the vtkImageData without(!) copying the content
 	cv::Mat censusImg(heightIm, widthIm, CV_8U);
 

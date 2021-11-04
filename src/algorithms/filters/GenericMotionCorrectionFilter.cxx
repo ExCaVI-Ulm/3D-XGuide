@@ -26,7 +26,7 @@ MotionX(0), MotionY(0), MotionZ(0),
 UseUnsharpMasking(false), MaskingSigma(1.0), MaskingWeight(1.0),
 UseSobelFilter(false), KSizeSobel(3), ScaleSobel(2), DeltaSobel(0),
 UseScharrFilter(false), ScaleScharr(1), DeltaScharr(0),
-UseCensus(false),
+UseCensus(false), UseDLManualScaling(false), MoveX(false), MoveY(true), DLScaleX(1.0), DLScaleY(1.0),
 volumeVisualizer(0), trackingPointToUseForVolumeVisualizerUpdate(-1)
 {
 }

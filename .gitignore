@@ -2,3 +2,5 @@ RELEASE
 build
 build.cmd
 package.cmd
+buildWithCurl.cmd
+dist

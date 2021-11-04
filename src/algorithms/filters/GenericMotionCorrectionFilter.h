@@ -85,6 +85,17 @@ public:
 	vtkGetMacro(DeltaScharr, int);
 	vtkSetMacro(DeltaScharr, int);
 
+	vtkGetMacro(UseDLManualScaling, bool);
+	vtkSetMacro(UseDLManualScaling, bool);
+	vtkGetMacro(MoveX, bool);
+	vtkSetMacro(MoveX, bool);
+	vtkGetMacro(MoveY, bool);
+	vtkSetMacro(MoveY, bool);
+	vtkGetMacro(DLScaleX, double);
+	vtkSetMacro(DLScaleX, double);
+	vtkGetMacro(DLScaleY, double);
+	vtkSetMacro(DLScaleY, double);
+
 	/// Add an assembly to apply the movement to.
 	void addAssemblyToMove(vtkAssembly* assembly, bool invertMovement = false);
 
@@ -124,9 +135,11 @@ protected:
 	bool ProcessImages;	/// Wheter the algorithm computes (true) or just passes the images in the pipeline (false)
 
 	bool MoveVertically, MoveHorizontally, MoveAlongZAxis; /// Whether to update the overlay in the respective direction.
-
+	bool MoveX, MoveY;
+	double DLScaleX, DLScaleY;
 	/// Scale and shift applied to the movement.
 	bool UseManualScaling; // whether to use the user defined scaling or automatic computation for each assembly
+	bool UseDLManualScaling;
 	double ScaleX, ScaleY, ScaleZ;
 	double ShiftX, ShiftY, ShiftZ; 
 	bool UseUnsharpMasking, UseSobelFilter, UseScharrFilter, UseCensus;

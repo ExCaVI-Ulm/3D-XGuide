@@ -33,6 +33,8 @@ public:
 	void setGeometry(XRayGeometry* g);
 
 	virtual std::vector<AbstractFilterWidget*> getPropertiesGUI();
+	bool setReferenceFrame;
+	bool resetReferenceFrame;
 
 protected:
 	MotionCorrectionFilter();
@@ -53,8 +55,11 @@ protected:
 	virtual void Apply2dMotion();
 
 	XRayGeometry* geometry;
+	vtkImageData* referenceImage;
+	vtkImageData* referenceImageNew;
 
 private:
+	ofstream f;
 };
 
 #endif // MOTION_CORRECTION_FILTER_H

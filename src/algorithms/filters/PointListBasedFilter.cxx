@@ -85,6 +85,11 @@ void PointListBasedFilter::removeAllPoints(unsigned int listNumber) {
 		}
 		pointLists[listNumber].clear();
 	}
+
+	if (pointLists[listNumber].size() == 0)
+	{
+		pointWasDeleted(listNumber, pointLists[listNumber].size());
+	}
 	/*if(pointLists.size() > 1 && pointLists[1].size() > 0)
 	{
 		for(unsigned int i = 0; i < pointLists[1].size(); i++)

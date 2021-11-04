@@ -93,6 +93,7 @@
 #include "SimpleBiplaneFilter.h"
 #include "MotionCorrectionFilter.h"
 #include "CrosscorrelationMotionCorrectionFilter.h"
+#include "DeepLearningMotionCorrectionFilter.h"
 
 // framegrabber
 #include <Panel.h>
@@ -1949,6 +1950,49 @@ void OverlayScene::addTemplate(unsigned int streamNumber, double worldCoords[2],
 		}
 
 	}
+
+}
+
+void OverlayScene::setReferenceFrameForMotionCompensation(unsigned int streamNumber, bool set)
+{
+	DeepLearningMotionCorrectionFilter* filter = dynamic_cast<DeepLearningMotionCorrectionFilter*>(theMotionCorrections);
+	if (!filter) {
+		cout << "This action is not implemented for this filter type! Please select Deep Learning-based Motion Correction Filter" << endl;
+		return;
+	}
+
+	//PointListBasedFilter* filter = dynamic_cast<PointListBasedFilter*>(theMotionCorrections);
+	//if (!filter) return; // the current filter is not derived from PointListBasedFilter --> do nothing
+	theMotionCorrections->setReferenceFrame = set;
+
+
+}
+
+void OverlayScene::resetReferenceFrameForMotionCompensation(unsigned int streamNumber, bool set)
+{
+	DeepLearningMotionCorrectionFilter* filter = dynamic_cast<DeepLearningMotionCorrectionFilter*>(theMotionCorrections);
+	if (!filter) {
+		cout << "This action is not implemented for this filter type! Please select Deep Learning-based Motion Correction Filter" << endl;
+		return;
+	}
+	theMotionCorrections->setReferenceFrame = set;
+	theMotionCorrections->resetReferenceFrame = set;
+
+
+}
+
+void OverlayScene::removeReferenceFrameForMotionCompensation(unsigned int streamNumber, bool set)
+{
+	DeepLearningMotionCorrectionFilter* filter = dynamic_cast<DeepLearningMotionCorrectionFilter*>(theMotionCorrections);
+	if (!filter) {
+		cout << "This action is not implemented for this filter type! Please select Deep Learning-based Motion Correction Filter" << endl;
+		return;
+	}
+	theMotionCorrections->setReferenceFrame = !set;
+	theMotionCorrections->resetReferenceFrame = !set;
+
+	filter->removeAllPoints();
+
 
 }
 

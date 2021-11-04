@@ -19,6 +19,10 @@ MotionCorrectionFilter::MotionCorrectionFilter()
 	SetNumberOfInputPorts(1);
 	SetNumberOfOutputPorts(1);
 
+	setReferenceFrame = false;
+	resetReferenceFrame = false;
+
+
 	geometry = 0;
 }
 
@@ -125,14 +129,43 @@ int MotionCorrectionFilter::RequestData(
 	
 	outputImage->ShallowCopy(inputImage);// just pass the image
 		
+	vtkImageData* tmpImage = vtkImageData::New();
+	tmpImage->ShallowCopy(inputImage);
+
 
 	if(ProcessImages) {
 
+		clock_t time_start, time_stop;
+		double duration;
+		f.open("ComputeMotionTime.txt", ios::out | ios::app);
+		time_start = clock();	
+
 		ComputeMotion(inputImage, MotionX, MotionY); // sets the last parameters
 		// projects motion to 2D and apply it
+		time_stop = clock();
+		duration = (double)(time_stop - time_start);
+		f << duration << endl;
+		f.close();
 		Apply2dMotion();
 
 	}
+
+	if (!setReferenceFrame)
+	{
+		referenceImage = tmpImage;
+	}
+
+	if (!resetReferenceFrame)
+	{
+		referenceImageNew = tmpImage;
+	}		
+	else
+	{
+		referenceImage = referenceImageNew;
+		resetReferenceFrame = false;
+	}
+		
+
 
 	return 1;
 }
