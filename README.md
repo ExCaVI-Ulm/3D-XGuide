@@ -45,6 +45,7 @@ Download, unpack, and start server_model.exe from [Releases](https://github.com/
 #### Citation
 If you use any part of this repository, please cite:
 - Vernikouskaya I, Bertsche D, Rottbauer W, Rasche V. [3D-XGuide: open-source X-ray navigation guidance system.](https://link.springer.com/article/10.1007%2Fs11548-020-02274-0) Int J Comput Assist Radiol Surg. 2021;16(1):53-56
+- Vernikouskaya I, Bertsche D, Rottbauer W, Rasche V. [Deep learning-based framework for motion-compensated image fusion in catheterization procedures.](https://www.sciencedirect.com/science/article/pii/S0895611122000428?via%3Dihub) Comput Med Imaging Graph. 2022;98:102069. doi: 10.1016/j.compmedimag.2022.102069
 
 #### Further useful stuff
 Python scripts for [XRAY Frame grabbing](https://github.com/vernikouskaya/Grabber).
