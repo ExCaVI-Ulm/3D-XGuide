@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="common">
+
+    <file>../data/icons/filesave.png</file>
+    <file>../data/icons/open.png</file>
+    <file>../data/icons/cross.png</file>
+  </qresource>
+</RCC>

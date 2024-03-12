@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1200</width>
+    <width>1343</width>
     <height>1000</height>
    </rect>
   </property>
@@ -65,6 +65,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="buttonLoadBreathMainStream">
+         <property name="text">
+          <string>Load breath curve</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="buttonLoadECGMainStream">
          <property name="enabled">
           <bool>true</bool>
@@ -80,6 +87,13 @@
          </property>
          <property name="flat">
           <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="buttonLoadLUTMainStream">
+         <property name="text">
+          <string>Load LUT</string>
          </property>
         </widget>
        </item>
@@ -640,6 +654,13 @@
              <enum>QLayout::SetDefaultConstraint</enum>
             </property>
             <item>
+             <widget class="QPushButton" name="buttonLoadBreath">
+              <property name="text">
+               <string>Load breath curve</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="buttonLoadECG">
               <property name="enabled">
                <bool>true</bool>
@@ -655,6 +676,13 @@
               </property>
               <property name="flat">
                <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="buttonLoadLUT">
+              <property name="text">
+               <string>Load LUT</string>
               </property>
              </widget>
             </item>
@@ -1194,6 +1222,13 @@
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
+             <widget class="QPushButton" name="buttonLoadBreathSecondStream">
+              <property name="text">
+               <string>Load breath curve</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="buttonLoadECGSecondStream">
               <property name="enabled">
                <bool>true</bool>
@@ -1209,6 +1244,13 @@
               </property>
               <property name="flat">
                <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="buttonLoadLUTSecondStream">
+              <property name="text">
+               <string>Load LUT</string>
               </property>
              </widget>
             </item>
@@ -1751,7 +1793,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1200</width>
+     <width>1343</width>
      <height>21</height>
     </rect>
    </property>
@@ -1780,6 +1822,8 @@
     <addaction name="actionReconstruct3dPoint"/>
     <addaction name="actionReconstructAll3dPoints"/>
     <addaction name="actionRemoveAll3dPoints"/>
+    <addaction name="separator"/>
+    <addaction name="actionCalculate_angle"/>
     <addaction name="separator"/>
     <addaction name="actionShowMarkerPositions"/>
     <addaction name="actionShowMarkerLabels"/>
@@ -2068,6 +2112,14 @@
   <action name="actionSelectXRayReferenceSecond">
    <property name="text">
     <string>Select XRay Reference 2</string>
+   </property>
+  </action>
+  <action name="actionCalculate_angle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Calculate angle</string>
    </property>
   </action>
  </widget>

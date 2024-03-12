@@ -101,8 +101,16 @@ const char* DICOMVisualizer::getInputFile() const
 	if (filename == NULL)
 	{
 		vtkStringArray *filenames = theDICOMReader->GetFileNames();
-		filename = filenames->GetValue(0).c_str();
+		if (filenames == NULL)
+		{
+			return NULL;
+		}
+		else
+		{
+			filename = filenames->GetValue(0).c_str();
 
+		}
+		
 	}
 
 	return filename;
@@ -302,7 +310,7 @@ void DICOMVisualizer::setCTInputFile(string theFilename, string theFoldername, i
 		{
 			PhilipsMesh = true;
 			reslices[i]->SetResliceAxesDirectionCosines(sliceOrientationsPhilips[i]);
-			if (orientation == 0 || orientation == 4)
+			if (orientation == 0 || orientation == 4)			
 			{
 				slice_spacing_for_registration = 1.0;
 			}

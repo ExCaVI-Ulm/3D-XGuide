@@ -37,6 +37,8 @@ public:
 	void setMRInputFile(std::string theFilename);
 	void setCTInputFile(std::string theFilename, std::string theFoldername, int orientation);
 	void getVolumeBounds(double bounds[6]) { return theDICOMReader->GetOutput()->GetBounds(bounds); };	// get bounds for X,Y and Z
+	void getVolumeDimensions(int dim[3]) { return theDICOMReader->GetOutput()->GetDimensions(dim); };	// get dimensions for X,Y and Z
+	void getVolumeSpacing(double spac[3]) { return theDICOMReader->GetOutput()->GetSpacing(spac); };	// get spacing for X,Y and Z
 	//void getRescaledVolumeBounds(double zSpacing, double zThickness);
 	void rescaleCTVolume(std::string theFilename);
 	double getSliceSpacing();

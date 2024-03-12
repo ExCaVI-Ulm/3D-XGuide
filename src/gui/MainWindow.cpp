@@ -3,6 +3,7 @@
 #include "SceneLabeling.h"
 #include "MeshesDialog.h"
 #include "XRayViewer.h"
+#include "MPRViewer.h"
 #include <DICOMVisualizer.h>
 #include "vtkInteractorStyleOnlyZoomWithViewAngle.h"
 #include "SystemGeometryDefinitions.h"
@@ -33,7 +34,7 @@
 using namespace std;
 
 MainWindow::MainWindow(QWidget *parent, int argc, char** argv) :
-    QMainWindow(parent), theOverlayScene(NULL), theXRayViewer(NULL)
+    QMainWindow(parent), theOverlayScene(NULL), theXRayViewer(NULL), theMPRViewer(NULL)
 {	
 	// disable warnings / error output to vtkOutputWindow
 	vtkObject::GlobalWarningDisplayOff();
@@ -100,6 +101,12 @@ void MainWindow::initVTKWindows()
 	if (theXRayViewer == NULL)
 	{
 		theXRayViewer = XRayViewer::New(this, theOverlayScene);
+
+	}
+
+	if (theMPRViewer == NULL)
+	{
+		theMPRViewer = MPRViewer::New(this, theOverlayScene);
 
 	}
 
@@ -257,6 +264,7 @@ void MainWindow::on_actionLoad3DMRIDataset_triggered()
 	MeshOrientation = OverlayScene::MR_ITK;
 	reloadFile = qPrintable(FileName);
 	meshesDialog->activateAddMeshButton(true);
+	meshesDialog->activateLoadDelaunayButton(true);
 	theOverlayScene->setMRInputFileForMesh(MeshOrientation);
 
 	updateGUI();	
@@ -278,6 +286,7 @@ void MainWindow::on_action3DMRI_coronal_triggered()
 	reloadFile = qPrintable(FileName);
 	reloadDir = qPrintable(absolute);
 	meshesDialog->activateAddMeshButton(true);
+	meshesDialog->activateLoadDelaunayButton(true);
 	//theOverlayScene->setMRInputFileForMesh(MeshOrientation);
 
 	updateGUI();
@@ -298,6 +307,7 @@ void MainWindow::on_action3DMRI_axial_triggered()
 	reloadFile = qPrintable(FileName);
 	reloadDir = qPrintable(absolute);
 	meshesDialog->activateAddMeshButton(true);
+	meshesDialog->activateLoadDelaunayButton(true);
 	//theOverlayScene->setMRInputFileForMesh(MeshOrientation);
 
 	updateGUI();
@@ -339,6 +349,7 @@ void MainWindow::on_actionLoad3DCTDatasetPHILIPS_triggered()
 	reloadFile =  qPrintable(FileName);
 	reloadDir = qPrintable(absolute);
 	meshesDialog->activateAddMeshButton(true);
+	meshesDialog->activateLoadDelaunayButton(true);
 	//theOverlayScene->setMRInputFileForMesh(MeshOrientation);
 
 	updateGUI();
@@ -359,6 +370,7 @@ void MainWindow::on_actionLoad3DCTDatasetITK_triggered()
 	reloadDir = qPrintable(absolute);
 
 	meshesDialog->activateAddMeshButton(true);
+	meshesDialog->activateLoadDelaunayButton(true);
 	//theOverlayScene->setMRInputFileForMesh(MeshOrientation);
 
 	updateGUI();
@@ -375,7 +387,6 @@ void MainWindow::updateGUI()
 
 	viewer->getRegisteredVolumeBounds(bounds);
 	double spacing = viewer->getSliceSpacing();
-
 
 	sliderLevelWindow->setEnabled(true);
 	verticalSlider_X->setEnabled(true);
@@ -409,6 +420,12 @@ void MainWindow::on_actionOpenXrayViewer_triggered()
 	theXRayViewer->show();
 
 	//theOverlayScene->initXRAYWindows();
+}
+
+void MainWindow::on_actionOpenMPRViewer_triggered()
+{
+	theMPRViewer->show();
+
 }
 
 void MainWindow::on_actionSaveScene_triggered()
@@ -687,6 +704,7 @@ void MainWindow::loadScene(const char* file)
 					theOverlayScene->getDICOMAnglesToWindowRef(i, primAngle, secAngle);
 					//theXRayViewer->setUpdates(i, false);
 					theXRayViewer->clearTextActors(i);
+					theXRayViewer->clearECGChart(i);
 					theXRayViewer->displayAngleInWindow(i, primAngle, secAngle);
 				}
 
@@ -708,6 +726,7 @@ void MainWindow::loadScene(const char* file)
 				theOverlayScene->playReferenceStream(value, (char*)stringsNew[i].c_str(), i);
 				theXRayViewer->activateGui(value, (char*)stringsNew[i].c_str(), i);
 				theXRayViewer->clearTextActors(i);
+				theXRayViewer->clearECGChart(i);
 				theOverlayScene->getDICOMAnglesToWindowRef(i, primAngle, secAngle);
 				theXRayViewer->displayAngleInWindow(i, primAngle, secAngle);
 					
@@ -743,6 +762,7 @@ void MainWindow::loadScene(const char* file)
 			/*theXRayViewer->setSliderValue(2, settings.value("CURRENT_FRAME_MAIN").toInt());
 			theXRayViewer->setUpdates(2, false);*/
 			theXRayViewer->clearTextActors(2);
+			theXRayViewer->clearECGChart(2);
 			theOverlayScene->getDICOMAnglesToWindow(primAngle, secAngle);
 			theXRayViewer->displayAngleInWindow(2, primAngle, secAngle);
 			//theXRayViewer->show();
@@ -829,6 +849,7 @@ void MainWindow::loadScene(const char* file)
 		}*/
 
 		meshesDialog->activateAddMeshButton(true);
+		meshesDialog->activateLoadDelaunayButton(true);
 		updateGUI();
 
 	}

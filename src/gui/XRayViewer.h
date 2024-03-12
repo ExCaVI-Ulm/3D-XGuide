@@ -25,8 +25,14 @@ class vtkFocalPlanePointPlacer;
 #include "vtkCommand.h"
 #include "vtkInteractorStyleMy2D.h"
 #include <vtkTextActor.h>
+#include <vtkLineSource.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkActor.h>
 
+#include <vtkLineWidget.h>
 #include <vtkLineWidget2.h>
+#include <vtkTextWidget.h>
+
 
 
 class XRayViewer : public QMainWindow, protected Ui::XRayViewer, public vtkCommand
@@ -52,6 +58,7 @@ public:
 	void setUpdates(int index, bool disable);
 	void activateGui(int framenumber, char* dir, int index);
 	void clearTextActors(int index);
+	void clearECGChart(int index);
 	void enableMarkerMenu();
 
 	void resetCounters(bool system);
@@ -88,6 +95,7 @@ signals:
 
 	void on_actionSetMarkerPoint_triggered();
 	void on_actionReconstruct3dPoint_triggered();
+	void on_actionCalculate_angle_toggled(bool checked);
 	void on_actionReconstructAll3dPoints_triggered();
 	void on_actionRemoveAll3dPoints_triggered();
 	void on_actionShowMarkerPositions_toggled(bool checked);
@@ -121,9 +129,15 @@ signals:
 	void streamPlayerSecondStream_update();
 	void streamPlayerMainStream_update();
 
+	void on_buttonLoadLUT_clicked();
+	void on_buttonLoadLUTSecondStream_clicked();
+	void on_buttonLoadLUTMainStream_clicked();
 	void on_buttonLoadECG_clicked();
 	void on_buttonLoadECGSecondStream_clicked();
 	void on_buttonLoadECGMainStream_clicked();
+	void on_buttonLoadBreath_clicked();
+	void on_buttonLoadBreathSecondStream_clicked();
+	void on_buttonLoadBreathMainStream_clicked();
 
 	void on_buttonLive_clicked();
 	void on_ButtonLoadRunSecond_clicked();
@@ -134,6 +148,7 @@ signals:
 private:
 	void Seed(bool checked);
 	void AddDistanceMeasurementToView(bool checked);
+	void AddAngleMeasurementToView(bool checked, double angle, double distance);
 	void setupNew(bool biplane);
 	//void setupNew();
 	void setupMainNew();
@@ -150,9 +165,15 @@ private:
 	vtkInteractorStyleMy2D* templateSelectorSecondStream;
 	vtkInteractorStyleMy2D* templateSelectorMainStream;
 
+	bool LUTLoad;
+	bool LUTLoadSecondStream;
+	bool LUTLoadMainStream;
 	bool ECGLoad;
 	bool ECGLoadSecondStream;
 	bool ECGLoadMainStream;
+	bool BreathLoad;
+	bool BreathLoadSecondStream;
+	bool BreathLoadMainStream;
 	bool disableUpdates;
 	bool disableUpdatesMainStream;
 	OverlayScene* scene;
@@ -184,9 +205,20 @@ private:
 	QTimer* streamPlayerMainStream; /// to play saved streams
 	//vtkTextActor* textActor;
 	vtkTextActor* txtActors[3];
+	vtkLineSource* lineAngle12;
+	vtkLineSource* lineAngle13;
+	vtkLineSource* lineAngle23;
+	vtkPolyDataMapper* lineMapperAngle12;
+	vtkPolyDataMapper* lineMapperAngle13;
+	vtkPolyDataMapper* lineMapperAngle23;
+	vtkActor* lineActorAngle12;
+	vtkActor* lineActorAngle13;
+	vtkActor* lineActorAngle23;
 
 	vtkSmartPointer<vtkDistanceWidget> distanceWidget;
 	vtkSmartPointer<vtkLineWidget2> lineWidget;
+	vtkSmartPointer<vtkTextWidget> angleWidget;
+	vtkSmartPointer<vtkLineWidget> lineAngleWidget;
 	//===========================================================
 	int run;
 	/*const char* fileString;*/

@@ -17,6 +17,7 @@ public:
 	void update();
 
 	void activateAddMeshButton(bool activate);
+	void activateLoadDelaunayButton(bool activate);
 
 private:
 	OverlayScene* scene;
@@ -31,6 +32,7 @@ private:
 signals:
 
 	private slots :
+		void on_loadDelaunayButton_clicked();
 	void on_addMeshButton_clicked();
 	void on_removeMeshButton_clicked();
 	void on_hideMeshesCheckBox_stateChanged(int state);

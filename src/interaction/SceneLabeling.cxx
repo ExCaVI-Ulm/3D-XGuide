@@ -25,7 +25,7 @@ SceneLabeling::SceneLabeling()
 	markerColor[1] = 0.0;
 	markerColor[2] = 1.0;
 
-	markerSize = 2;
+	markerSize = 1;
 }
 
 void SceneLabeling::setRenderWindow(vtkRenderWindow* win)

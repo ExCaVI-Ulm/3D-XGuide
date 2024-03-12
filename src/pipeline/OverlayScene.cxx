@@ -16,6 +16,9 @@
 #include <vtkDICOMMetaData.h>
 #include <vtkDICOMReader.h>
 #include <vtkDICOMImageReader.h>
+#include "vtkDelaunay2D.h"
+#include <vtkNamedColors.h>
+#include <vtkPlotPoints.h>
 
 #include <vtkImageResize.h>
 //
@@ -56,6 +59,8 @@
 #include <vtkFloatArray.h>
 #include <vtkTable.h>
 #include <vtkChartXY.h>
+#include <vtkTextMapper.h>
+#include <vtkActor2D.h>
 #include <vtkPlot.h>
 #include <vtkAxis.h>
 #include <vtkImageMapper3D.h>
@@ -232,6 +237,7 @@ vtkRenderer* OverlayScene::getXRAYRenderer(unsigned int number) const
 }
 
 
+
 DICOMVisualizer* OverlayScene::GetMRVisualizer()
 {
 	return theMRVisualizer;
@@ -313,8 +319,19 @@ void OverlayScene::setupPipeline()
 		// Set up the view
 		view[i] = vtkContextActor::New();
 		renECG[i]->AddActor(view[i]);
+		mapText[i] = vtkTextMapper::New();
+		text[i] = vtkActor2D::New();
+		text[i]->SetMapper(mapText[i]);		
 		// ECG Plot: Add multiple line plots, setting the colors etc
 		chart[i] = vtkChartXY::New();
+		// To plot breathing curve
+		renBreath[i] = vtkRenderer::New();
+		renBreath[i]->SetViewport(0, 0, 0.35, 0.35);
+		renBreath[i]->SetBackground(0.5, 0.5, 0.5);
+		renBreath[i]->SetLayer(1);
+		viewBreath[i] = vtkContextActor::New();
+		renBreath[i]->AddActor(viewBreath[i]);
+		chartBreath[i] = vtkChartXY::New();
 
 	}
 	// Renderer/Window for 3D view
@@ -343,6 +360,7 @@ void OverlayScene::setupPipeline()
 		renWinXRAY[i]->SetNumberOfLayers(2);
 		renWinXRAY[i]->AddRenderer(rendererXRAY[i]);
 		renWinXRAY[i]->AddRenderer(renECG[i]);
+		renWinXRAY[i]->AddRenderer(renBreath[i]);
 
 		XRAYReader* readerXRAY = XRAYReader::New();
 		theXRAYReaders.push_back(readerXRAY);
@@ -373,6 +391,7 @@ void OverlayScene::setupPipeline()
 	rendererMainXRAY->SetLayer(0);
 
 	renWinMainXRAY->AddRenderer(renECG[2]);
+	renWinMainXRAY->AddRenderer(renBreath[2]);
 
 	
 	resliceMainXRAY = vtkImageReslice::New();
@@ -3170,8 +3189,11 @@ void OverlayScene::setMainXRAYInputToFile(const char* file)
 	actorMainXRAY->GetMapper()->SetInputConnection(theMotionCorrections->GetOutputPort());
 
 	this->getDicomGeometryValues(SID, sourcePatDist, primAngle, secAngle, lateralPos, longitudinalPos, verticalPos, mmPerPixel, imageSizeX, imageSizeY, ok);
+	/*lateralPos = -115;
+	longitudinalPos = 548;
+	verticalPos = 911;*/
 	setMainGeometryByDICOM(SID, sourcePatDist, primAngle, secAngle, lateralPos, longitudinalPos, verticalPos, mmPerPixel, imageSizeX, imageSizeY);
-
+	
 	//rendererMainXRAY->ResetCamera();
 	//renWinMainXRAY->Render();
 
@@ -3238,6 +3260,40 @@ void OverlayScene::getFrameForPeak(unsigned int streamNumber, int& frame)
 		}
 	}
 	
+}
+
+void OverlayScene::loadLUTFile(unsigned int streamNumber, const char* filename, int frameNumber)
+{	
+	LUTframe[streamNumber].clear();
+	LUTphase[streamNumber].clear();
+	
+	vector<string> row;
+	string line, word;
+	/*vector<string> frame;
+	vector<string> phase;*/
+
+	ifstream file(filename);
+
+	if (file.is_open())
+	{
+		// skip the first line
+		getline(file, line);
+		while (getline(file, line))
+		{
+			row.clear();
+
+			stringstream str(line);
+
+			while (getline(str, word, ','))
+				row.push_back(word);
+			LUTframe[streamNumber].push_back(row[1]);
+			LUTphase[streamNumber].push_back(row[2]);
+
+		}
+	}
+	else
+		cout << "Could not open the file\n";	
+	setLUTFrame(streamNumber, frameNumber);
 }
 
 void OverlayScene::loadECGFile(unsigned int streamNumber, const char* filename, int frameNumber)
@@ -3327,6 +3383,8 @@ void OverlayScene::loadECGFile(unsigned int streamNumber, const char* filename, 
 	chart[streamNumber]->GetAxis(1)->SetLabelsVisible(false);
 	chart[streamNumber]->GetAxis(0)->SetAxisVisible(false);
 	chart[streamNumber]->GetAxis(1)->SetAxisVisible(false);
+	chart[streamNumber]->GetAxis(0)->SetTitleVisible(false);
+	chart[streamNumber]->GetAxis(1)->SetTitleVisible(false);
 
 #if VTK_MAJOR_VERSION <= 5
 	line->SetInput(table, 0, 1);
@@ -3352,6 +3410,270 @@ void OverlayScene::loadECGFile(unsigned int streamNumber, const char* filename, 
 
 }
 
+void OverlayScene::removeECGChart(unsigned int streamNumber)
+{
+	view[streamNumber]->GetScene()->RemoveItem(chart[streamNumber]);
+	viewBreath[streamNumber]->GetScene()->RemoveItem(chartBreath[streamNumber]);
+	
+	if (text[streamNumber] != NULL)
+	{
+		renECG[streamNumber]->RemoveActor2D(text[streamNumber]);
+
+	}
+	for (int i = 0; i < theMeshActors[streamNumber].size(); ++i)
+	{
+		theMeshAssemblies[streamNumber]->AddPart(theMeshActors[streamNumber][i]);
+	}
+
+}
+
+void OverlayScene::loadBreathFile(unsigned int streamNumber, const char* filename, int frameNumber)
+{
+	chartBreath[streamNumber]->ClearPlots();
+	viewBreath[streamNumber]->GetScene()->RemoveItem(chart[streamNumber]);
+
+	vector<string> row;
+	string line, word;
+	vector<string> displacementFrame;
+	vector<string> gradientFrame;
+	int numLines = 0;
+
+	ifstream file(filename);
+
+	if (file.is_open())
+	{
+		while (getline(file, line))
+		{
+			row.clear();
+
+			stringstream str(line);
+
+			while (getline(str, word, ' '))
+				row.push_back(word);
+			displacementFrame.push_back(row[0]);
+			gradientFrame.push_back(row[1]);
+			++numLines;
+
+		}
+	}
+	else
+		cout << "Could not open the file\n";
+	// add in front one more "0" displacement with gradient "0" for the very first frame and increase numLines
+	auto itD = displacementFrame.begin();
+	displacementFrame.insert(itD, "0.0");
+	auto itG = gradientFrame.begin();
+	gradientFrame.insert(itG, "0.0");
+	numLines += 1;
+	
+	// Create a table with some points in it
+	vtkSmartPointer<vtkTable> table =
+		vtkSmartPointer<vtkTable>::New();
+
+	vtkSmartPointer<vtkTable> tablePlus =
+		vtkSmartPointer<vtkTable>::New();
+
+	vtkSmartPointer<vtkTable> tableMinus =
+		vtkSmartPointer<vtkTable>::New();
+
+
+	vtkSmartPointer<vtkFloatArray> arrX =
+		vtkSmartPointer<vtkFloatArray>::New();
+	arrX->SetName("Time");
+	table->AddColumn(arrX);
+
+	vtkSmartPointer<vtkFloatArray> arrXPlus =
+		vtkSmartPointer<vtkFloatArray>::New();
+	arrXPlus->SetName("Time");
+	tablePlus->AddColumn(arrXPlus);
+
+	vtkSmartPointer<vtkFloatArray> arrXMinus =
+		vtkSmartPointer<vtkFloatArray>::New();
+	arrXMinus->SetName("Time");
+	tableMinus->AddColumn(arrXMinus);
+
+	vtkSmartPointer<vtkFloatArray> arrY =
+		vtkSmartPointer<vtkFloatArray>::New();
+	arrY->SetName("Signal");
+	table->AddColumn(arrY);
+
+	vtkSmartPointer<vtkFloatArray> arrYPlus =
+		vtkSmartPointer<vtkFloatArray>::New();
+	arrYPlus->SetName("Signal");
+	tablePlus->AddColumn(arrYPlus);
+
+	vtkSmartPointer<vtkFloatArray> arrYMinus =
+		vtkSmartPointer<vtkFloatArray>::New();
+	arrYMinus->SetName("Signal");
+	tableMinus->AddColumn(arrYMinus);
+
+	
+	int numLinesPlus = 0;
+	int numLinesMinus = 0;
+	for (int i = 0; i < numLines; ++i)
+	{
+		if (atof(gradientFrame[i].c_str()) == 1.0)
+		{
+			++numLinesPlus;
+		}
+		else if (atof(gradientFrame[i].c_str()) == -1.0)
+		{
+			++numLinesMinus;
+		}
+	}
+	table->SetNumberOfRows(numLines);
+	tablePlus->SetNumberOfRows(numLinesPlus);
+	tableMinus->SetNumberOfRows(numLinesMinus);
+	int numPlus = 0;
+	int numMinus = 0;
+	for (int i = 0; i < numLines; ++i)
+	{
+		table->SetValue(i, 0, i);
+		table->SetValue(i, 1, displacementFrame[i].c_str());
+		
+		if (atof(gradientFrame[i].c_str()) == 1.0)
+		{
+			tablePlus->SetValue(numPlus, 0, i);
+			tablePlus->SetValue(numPlus, 1, displacementFrame[i].c_str());
+			++numPlus;
+		}
+		else if (atof(gradientFrame[i].c_str()) == -1.0)
+		{
+			tableMinus->SetValue(numMinus, 0, i);
+			tableMinus->SetValue(numMinus, 1, displacementFrame[i].c_str());
+			++numMinus;
+		}
+		
+	}
+
+	viewBreath[streamNumber]->GetScene()->AddItem(chartBreath[streamNumber]);
+
+	vtkPlot *lineBreath = chartBreath[streamNumber]->AddPlot(vtkChart::LINE);
+	vtkPlot* pointsPlus = chartBreath[streamNumber]->AddPlot(vtkChart::POINTS);
+	vtkPlot* pointsMinus = chartBreath[streamNumber]->AddPlot(vtkChart::POINTS);
+	
+
+	chartBreath[streamNumber]->SetForceAxesToBounds(true);
+	chartBreath[streamNumber]->SetForceAxesToBounds(true);
+
+	chartBreath[streamNumber]->GetAxis(vtkAxis::LEFT)->SetGridVisible(false);
+	chartBreath[streamNumber]->GetAxis(vtkAxis::BOTTOM)->SetGridVisible(false);
+	chartBreath[streamNumber]->GetAxis(0)->SetTicksVisible(false);
+	chartBreath[streamNumber]->GetAxis(1)->SetTicksVisible(false);
+	chartBreath[streamNumber]->GetAxis(0)->SetLabelsVisible(false);
+	chartBreath[streamNumber]->GetAxis(1)->SetLabelsVisible(false);
+	chartBreath[streamNumber]->GetAxis(0)->SetAxisVisible(false);
+	chartBreath[streamNumber]->GetAxis(1)->SetAxisVisible(false);
+	chartBreath[streamNumber]->GetAxis(0)->SetTitleVisible(false);
+	chartBreath[streamNumber]->GetAxis(1)->SetTitleVisible(false);
+
+#if VTK_MAJOR_VERSION <= 5
+	line->SetInput(table, 0, 1);
+	pointsPlus->SetInput(tablePlus, 0, 1);
+	pointsMinus->SetInput(tableMinus, 0, 1);
+#else
+	lineBreath->SetInputData(table, 0, 1);
+	//line->Update();
+	lineBreath->Modified();
+	pointsPlus->SetInputData(tablePlus, 0, 1);
+	pointsPlus->Modified();
+	pointsMinus->SetInputData(tableMinus, 0, 1);
+	pointsMinus->Modified();
+#endif
+	lineBreath->SetColor(0, 0, 255, 255);
+	lineBreath->SetWidth(2.0);
+	
+	pointsPlus->SetColor(0, 255, 0, 125);
+	//pointsPlus->SetWidth(0.5);
+	dynamic_cast<vtkPlotPoints*>(pointsPlus)->SetMarkerStyle(vtkPlotPoints::CIRCLE);
+
+	pointsMinus->SetColor(255, 0, 0, 125);
+	//pointsMinus->SetWidth(0.5);
+	dynamic_cast<vtkPlotPoints*>(pointsMinus)->SetMarkerStyle(vtkPlotPoints::CIRCLE);
+
+	setBreathFrame(streamNumber, frameNumber);
+
+	if (streamNumber == 0 || streamNumber == 1)
+	{
+		renWinXRAY[streamNumber]->Render();
+	}
+	else if (streamNumber == 2)
+	{
+		renWinMainXRAY->Render();
+
+	}
+
+}
+
+void OverlayScene::setLUTFrame(unsigned int streamNumber, int frameNumber)
+{		
+	if (text[streamNumber] != NULL)
+	{
+		renECG[streamNumber]->RemoveActor2D(text[streamNumber]);
+
+	}
+
+	vector<std::string> fileNamesMeshes = this->getMeshFileNames();
+
+	int index[10];
+	int count;
+	// save consequent order of mesh phases
+	for (int m = 0; m < fileNamesMeshes.size(); ++m)
+	{ 
+		if (hasEnding(fileNamesMeshes[m].c_str(), "_30.vtk"))
+		{
+			index[m] = 30;
+			count = m;
+		}
+		if (hasEnding(fileNamesMeshes[m].c_str(), "_40.vtk"))
+			index[m] = 40;
+		if (hasEnding(fileNamesMeshes[m].c_str(), "_50.vtk"))
+			index[m] = 50;
+		if (hasEnding(fileNamesMeshes[m].c_str(), "_60.vtk"))
+			index[m] = 60;
+	}
+	// remove all meshes except those at phase 30
+	for (int i = 0; i < theMeshActors[streamNumber].size(); ++i) {
+		
+		if (index[i] == 30 || index[i] == 40 || index[i] == 50 || index[i] == 60)
+		{
+			if (i != count)
+			{
+				theMeshAssemblies[streamNumber]->RemovePart(theMeshActors[streamNumber][i]);
+				theMeshAssemblies[streamNumber]->AddPart(theMeshActors[streamNumber][count]);
+			}
+		}
+					
+	}
+	// add actual mesh phase according to LUT and remove mesh at phase 30
+	for (int i = 0; i < LUTframe[streamNumber].size(); ++i)
+	{
+		if (frameNumber == atoi(LUTframe[streamNumber][i].c_str()))
+		{
+			const char* temp = LUTphase[streamNumber][i].c_str();
+			mapText[streamNumber]->SetInput(temp);
+			renECG[streamNumber]->AddActor(text[streamNumber]);
+			text[streamNumber]->SetPosition(100, 25);
+			text[streamNumber]->SetWidth(2.0);
+			for (int n = 0; n < fileNamesMeshes.size(); ++n)
+			{
+				if (index[n] == 30 || index[n] == 40 || index[n] == 50 || index[n] == 60)
+				{
+					if (atoi(temp) == index[n])
+					{
+						theMeshAssemblies[streamNumber]->RemovePart(theMeshActors[streamNumber][count]);
+						theMeshAssemblies[streamNumber]->AddPart(theMeshActors[streamNumber][n]);
+
+					}
+				}
+			}
+			
+		}		
+		
+	}	
+
+	
+
+}
 void OverlayScene::setECGFrame(unsigned int streamNumber, int frameNumber)
 {
 
@@ -3392,6 +3714,50 @@ void OverlayScene::setECGFrame(unsigned int streamNumber, int frameNumber)
 	chart[streamNumber]->RemovePlot(1);
 
 	vtkPlot *line = chart[streamNumber]->AddPlot(vtkChart::LINE);
+	line->SetInputData(table, 0, 1);
+	//line->Update();
+	line->Modified();
+	line->SetColor(255, 0, 0, 255);
+
+	line->SetWidth(1.5);
+
+	if (streamNumber == 0 || streamNumber == 1)
+	{
+		renWinXRAY[streamNumber]->Render();
+	}
+	else if (streamNumber == 2)
+	{
+		renWinMainXRAY->Render();
+
+	}
+
+}
+
+void OverlayScene::setBreathFrame(unsigned int streamNumber, int frameNumber)
+{
+
+	vtkSmartPointer<vtkTable> table =
+		vtkSmartPointer<vtkTable>::New();
+
+	vtkSmartPointer<vtkFloatArray> arrP =
+		vtkSmartPointer<vtkFloatArray>::New();
+	arrP->SetName("Point");
+	table->AddColumn(arrP);
+
+	vtkSmartPointer<vtkFloatArray> arrS =
+		vtkSmartPointer<vtkFloatArray>::New();
+	arrS->SetName("Cursor");
+	table->AddColumn(arrS);
+
+	table->SetNumberOfRows(2);
+	table->SetValue(0, 0, frameNumber - 1);	//one frame before the slider since numbering start with 0 for the first frame
+	table->SetValue(1, 0, frameNumber - 1);
+	table->SetValue(0, 1, -30);
+	table->SetValue(1, 1, 30);
+
+	chartBreath[streamNumber]->RemovePlot(3);
+
+	vtkPlot *line = chartBreath[streamNumber]->AddPlot(vtkChart::LINE);
 	line->SetInputData(table, 0, 1);
 	//line->Update();
 	line->Modified();
@@ -3681,6 +4047,114 @@ bool OverlayScene::hasEnding(string const file, string const ending)
 	}
 };
 
+void OverlayScene::addDelaunayMesh(string file)
+{
+	vtkSmartPointer<vtkPolyDataReader> meshReader = vtkSmartPointer<vtkPolyDataReader>::New();
+	meshReader->SetFileName(file.c_str());
+	meshReader->Update();
+
+	meshFileNames.push_back(file.c_str());
+	// save mesh to list
+	theMeshes.push_back(meshReader->GetOutput());
+
+	vtkSmartPointer<vtkDelaunay2D> Delaunay2Dobj =
+		vtkSmartPointer< vtkDelaunay2D >::New();
+
+	Delaunay2Dobj->SetInputData(meshReader->GetOutput());
+	Delaunay2Dobj->Update();
+
+	vtkNew<vtkNamedColors> color;
+
+	double position[3], position2[3], bounds[6], space[3], reg[3];
+	int dimensions[3];
+	theMRVisualizer->getVolumeDimensions(dimensions);
+	theMRVisualizer->getVolumeBounds(bounds);
+	theMRVisualizer->getImagePositionPatient(reg);
+	theMRVisualizer->getVolumeSpacing(space);
+	double spacing = theMRVisualizer->getSliceSpacing();
+
+	// for axial MRI
+	//position[0] = space[0] * dimensions[0] / 2.0 - bounds[1];
+	// y-axis should be mirrored
+	//position[1] = space[1] * dimensions[1] / 2.0 - bounds[2];
+	//position[2] = space[2] *dimensions[2] / 2.0 - bounds[5];
+
+	// for CT
+	position2[0] = -reg[0] - (bounds[1] - bounds[0]) / 2.0;
+	position2[1] = -reg[1] - (bounds[3] - bounds[2]) / 2.0;
+	position2[2] = -reg[2] - spacing*(bounds[5] - bounds[4]) / 2.0;
+
+	// for coronal and axial MRI
+	position[0] = -reg[0] - (bounds[1] - bounds[0]) / 2.0;
+	position[1] = -reg[1] - (bounds[3] - bounds[2]) / 2.0;
+	position[2] = -reg[2] - (bounds[5] - bounds[4]) / 2.0;
+
+
+	for (int i = 0; i < (outputWindows + 1); ++i) { // for each window
+
+		vtkTransformFilter* filter = vtkTransformFilter::New();
+		theMeshTransformFilters[i].push_back(filter);
+		//filter->SetInputData(Delaunay2Dobj->GetOutput());
+		filter->SetInputData(meshReader->GetOutput());
+		filter->SetTransform(theRegistrationTransformers[i]);
+
+		vtkPolyDataMapper* mapper = vtkPolyDataMapper::New();
+		theMeshMappers[i].push_back(mapper);
+		mapper->SetInputConnection(filter->GetOutputPort());
+
+		vtkActor* actor = vtkActor::New();
+		theMeshActors[i].push_back(actor);
+		actor->SetMapper(mapper);
+		//actor->GetProperty()->SetColor(meshColor);
+		actor->GetProperty()->SetColor(color->GetColor3d("banana").GetData());
+		actor->GetProperty()->SetInterpolationToFlat();
+		actor->GetProperty()->SetOpacity(meshOpacity);
+		actor->GetProperty()->SetLineWidth(3);
+		if (orientation == 0 || orientation == 4)
+		{
+			actor->SetPosition(position);	// shifted origin
+		}
+		if (orientation == 2)
+		{
+			actor->SetPosition(position2);	// shifted origin
+		}
+
+		theMeshAssemblies[i]->AddPart(actor);
+	}
+
+	if (theMeshes.size() == 1)
+	{
+		if (orientation == 0)
+		{
+			loadDefaultMeshPosition(MR_PHILIPS);	// correct orientation AP is needed for correct calculation and display of the angles
+		}
+
+		if (orientation == 1)
+		{
+			loadDefaultMeshPosition(MR_ITK);	// correct orientation AP is needed for correct calculation and display of the angles
+		}
+		if (orientation == 2)
+		{
+			loadDefaultMeshPosition(CT_PHILIPS);	// correct orientation AP is needed for correct calculation and display of the angles
+		}
+		if (orientation == 3)
+		{
+			loadDefaultMeshPosition(CT_ITK);	// correct orientation AP is needed for correct calculation and display of the angles
+		}
+		if (orientation == 4)
+		{
+			loadDefaultMeshPosition(MR_PHILIPS_ax);	// correct orientation AP is needed for correct calculation and display of the angles
+		}
+
+	}
+
+	renWin3D->Render();
+	for (int i = 0; i < inputChannels; ++i) {
+		renWinXRAY[i]->Render();
+	}
+
+	renWinMainXRAY->Render();
+}
 void OverlayScene::addOverlayMesh(string file)
 {
 	vtkSmartPointer<vtkPolyData> data = vtkSmartPointer<vtkPolyData>::New();
@@ -4357,10 +4831,47 @@ void OverlayScene::removeNearestMarkerPoint(unsigned int streamNumber, double po
 	theMarkerPoints[streamNumber]->deletePointNextTo(pos);
 }
 
+void OverlayScene::returnDetectorPosition(unsigned int streamNumber, double pos[1])
+{
+
+	pos[0] = theXRAYActors[streamNumber]->GetPosition()[2];
+
+}
+
 SceneLabeling* OverlayScene::getMarkerLabeling(unsigned int streamNumber)
 {
 	return theMarkerPoints[streamNumber];
 }
+
+
+double OverlayScene::getAngleABC(const double p1[2], const double p2[2], const double p3[2])
+{
+	ofstream file;
+	double ab[3] = { p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2] };
+	double bc[3] = { p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2] };
+
+	double abVec = sqrt(ab[0] * ab[0] + ab[1] * ab[1] + ab[2] * ab[2]);
+	double bcVec = sqrt(bc[0] * bc[0] + bc[1] * bc[1] + bc[2] * bc[2]);
+
+	double abNorm[3] = { ab[0] / abVec, ab[1] / abVec, ab[2] / abVec };
+	double bcNorm[3] = { bc[0] / bcVec, bc[1] / bcVec, bc[2] / bcVec };
+
+	double res = abNorm[0] * bcNorm[0] + abNorm[1] * bcNorm[1] + abNorm[2] * bcNorm[2];
+	double angle = acos(res)*180.0 / 3.141592653589793;
+	file.open("angle.txt", std::ofstream::out | std::ofstream::trunc);
+	file << angle << endl;
+	file.close();
+	return std::round(angle*100.0)/100.0;
+}
+
+double OverlayScene::getDistanceBC(const double p2[2], const double p3[2])
+{
+	double distance = sqrt((p3[0] - p2[0])*(p3[0] - p2[0]) + (p3[1] - p2[1])*(p3[1] - p2[1]) + (p3[2] - p2[2])*(p3[2] - p2[2]));
+		
+	return std::round(distance*100.0) / 100.0;
+
+}
+
 
 double OverlayScene::reconstruct3dPointWithSkewLinesIntersection(const double p1[2], const double p2[2], double res[3])
 {

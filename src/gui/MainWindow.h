@@ -12,6 +12,7 @@ class MeshesDialog;
 class XRayViewer;
 class OverlayScene;
 class XRayViewer;
+class MPRViewer;
 
 class vtkDistanceWidget;
 
@@ -49,6 +50,7 @@ private slots:
 	void on_actionLoad3DCTDatasetPHILIPS_triggered();
 	void on_actionLoad3DCTDatasetITK_triggered();
 	void on_actionOpenXrayViewer_triggered();
+	void on_actionOpenMPRViewer_triggered();
 
 	void on_actionSaveScene_triggered();
 	void on_actionLoadScene_triggered();
@@ -107,6 +109,7 @@ private:
 	OverlayScene* theOverlayScene; /// VTK pipeline
 	XRayViewer* theXRayViewer;
 	DICOMVisualizer* viewer;
+	MPRViewer* theMPRViewer;
 
 	//vtkSmartPointer<vtkGDCMImageReader> XrayDICOMReader[2];	
 	

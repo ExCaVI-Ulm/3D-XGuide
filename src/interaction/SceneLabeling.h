@@ -93,7 +93,7 @@ public:
 		
 		double* pos = actor->GetPosition();
 		label->SetAttachmentPoint(pos[0], pos[1], pos[2]);
-		label->SetHeight(0.07);
+		label->SetHeight(0.05);
 		
 		label->ThreeDimensionalLeaderOff();
 		label->BorderOff();

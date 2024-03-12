@@ -2497,7 +2497,7 @@
      <x>0</x>
      <y>0</y>
      <width>936</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -2519,6 +2519,8 @@
     <addaction name="actionLoad3DCTDatasetITK"/>
     <addaction name="separator"/>
     <addaction name="actionOpenXrayViewer"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpenMPRViewer"/>
     <addaction name="separator"/>
     <addaction name="actionSaveScene"/>
     <addaction name="actionLoadScene"/>
@@ -2699,6 +2701,11 @@
   <action name="actionSet_slice_spacing_manually">
    <property name="text">
     <string>correct slice spacing of 3D volume manually</string>
+   </property>
+  </action>
+  <action name="actionOpenMPRViewer">
+   <property name="text">
+    <string>MPR Viewer</string>
    </property>
   </action>
  </widget>

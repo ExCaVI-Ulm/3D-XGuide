@@ -66,6 +66,7 @@ set(GuiSrcs
   gui/MeshesDialog.cpp
   gui/AlgorithmPropertiesDialog.cxx
   gui/XRayViewer.cpp
+  gui/MPRViewer.cxx
 
 )
 
@@ -74,6 +75,7 @@ set(GuiHeaders
   gui/MeshesDialog.h
   gui/AlgorithmPropertiesDialog.h
   gui/XRayViewer.h
+  gui/MPRViewer.h
 
 )
 
@@ -83,6 +85,7 @@ set(GuiUIs
   gui/AlgorithmPropertiesDialog.ui
   gui/XRayViewer.ui
   gui/UsageDialog.ui
+  gui/MPRViewer.ui
 )
 
 # pipeline

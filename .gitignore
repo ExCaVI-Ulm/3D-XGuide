@@ -1,4 +1,5 @@
 RELEASE
 build
 build.cmd
+buildWithCurl.cmd
 package.cmd

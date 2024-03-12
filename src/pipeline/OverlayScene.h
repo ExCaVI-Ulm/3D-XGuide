@@ -24,6 +24,8 @@ class vtkOpenGLImageSliceMapper;
 class vtkImageSliceMapper;
 class vtkImageShiftScale;
 class vtkAxesActor;
+class vtkTextMapper;
+class vtkActor2D;
 class vtkActor;
 class vtkLineSource;
 class vtkChartXY;
@@ -144,10 +146,15 @@ public:
 	void setMainXRAYInputToFile(const char* file);
 	void setInputToFile(const char* files, int streamNumber);
 	void disableECG(unsigned int streamNumber);
+	void loadLUTFile(unsigned int streamNumber, const char* filename, int frameNumber);
 	void loadECGFile(unsigned int streamNumber, const char* filename, int frameNumber);
 	void setFrameForPeak(unsigned int streamNumber);
 	void getFrameForPeak(unsigned int streamNumber, int& frame);
 	void setECGFrame(unsigned int streamNumber, int frameNumber);
+	void removeECGChart(unsigned int streamNumber);
+	void loadBreathFile(unsigned int streamNumber, const char* filename, int frameNumber);
+	void setBreathFrame(unsigned int streamNumber, int frameNumber);
+	void setLUTFrame(unsigned int streamNumber, int frameNumber);
 	vector<const char*> getXRAYFileNames();
 	const char* getXRAYMainFileName();
 	int getNumberOfFrames(int index); // get the number of frames for respective theXRAYReaders[0 - FirstStream, [1] - Second stream]
@@ -226,6 +233,7 @@ public:
 	void setMeshOpacity(double opacity, int index);
 	void giveMeshOpacityToScene(double opacity);
 	double getMeshOpacity(int index);
+	void addDelaunayMesh(string file);
 	void addOverlayMesh(string file);
 	void removeOverlayMesh(int meshNumber = -1); /// Removes the mesh, by default the one which was added last.
 	int getNumberOfMeshes() { return theMeshActors[0].size(); } /// Returns the number of meshes.
@@ -243,10 +251,13 @@ public:
 	/// @param pos: in world coordinates
 	void addMarkerPoint(unsigned int streamNumber, double pos[3]);
 	void removeNearestMarkerPoint(unsigned int streamNumber, double pos[3]);
+	void returnDetectorPosition(unsigned int streamNumber, double pos[1]);
 	SceneLabeling* getMarkerLabeling(unsigned int streamNumber);
 	/// Get the nearest template and use it's 3D position to set the MR volume sclices.
 	void setTrackingPointIndexForMRVolume(unsigned int streamNumber, double worldCoords[2]);
 
+	double getAngleABC(const double p1[2], const double p2[2], const double p3[2]);
+	double getDistanceBC(const double p2[2], const double p3[2]);
 	double reconstruct3dPointWithSkewLinesIntersection(const double p1[2], const double p2[2], double res[3]);
 
 	/// SceneLabeling markers set by the user (not reconstructed) for 3D-3D-Registration
@@ -341,6 +352,10 @@ private:
 	vtkRenderer* rendererXRAY[2];
 	vtkRenderer* renECG[3];
 	vtkContextActor* view[3];
+	vtkRenderer* renBreath[3];
+	vtkContextActor* viewBreath[3];
+	vtkTextMapper* mapText[3];
+	vtkActor2D* text[3];
 	vtkAxesActor* axesActor;
 	vtkAxesActor* axesXRAY[2];
 	vtkAxesActor* axesMainXRAY;
@@ -431,6 +446,7 @@ private:
 	//========================================================
 	vtkChartXY* chart[3];
 	int frameNumberForPeak[3];
+	vtkChartXY* chartBreath[3];
 
 	//Epipolarlines
 	vtkLineSource* epiline1_1;
@@ -499,6 +515,9 @@ private:
 	
 	//int FD[2];
 	ofstream g;	
+
+	vector<string> LUTframe[3];
+	vector<string> LUTphase[3];
 	//===================================================
 	// overwrite first image after the geometry has changed
 	int countOverwrittenframes;

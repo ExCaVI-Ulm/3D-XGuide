@@ -42,6 +42,9 @@
 #include <vtkTextWidget.h>
 #include <vtkTextActor.h>
 #include <vtkTextProperty.h>
+#include <vtkLineSource.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkActor.h>
 #include <vtkTextRepresentation.h>
 #include <vtkDistanceWidget.h>
 #include <vtkLineWidget.h>
@@ -56,13 +59,16 @@
 #include <vtkAxisActor2D.h>
 #include <vtkAxis.h>
 #include <vtkProperty2D.h>
-
 #include <vtkLineWidget2.h>
+#include <vtkLineWidget.h>
 #include <vtkLineRepresentation.h>
+#include <vtkTextRepresentation.h>
 
 #include <vector>
 #include <string>
 #include <math.h>
+#include <sstream>
+
 
 
 //////////////////
@@ -219,6 +225,12 @@ XRayViewer::XRayViewer(QWidget *parent, OverlayScene* scene) :
 	ECGLoad = false;
 	ECGLoadSecondStream = false;
 	ECGLoadMainStream = false;
+	LUTLoad = false;
+	LUTLoadSecondStream = false;
+	LUTLoadMainStream = false;
+	BreathLoad = false;
+	BreathLoadSecondStream = false;
+	BreathLoadMainStream = false;
 }
 
 void XRayViewer::on_actionReload_Pipeline_for_Framegrabber_triggered() {
@@ -295,6 +307,7 @@ void XRayViewer::setupMainNew() {
 	buttonLive->setEnabled(true);
 	radioButtonRecord->setChecked(false);
 	buttonLoadECGMainStream->setEnabled(true);
+	buttonLoadLUTMainStream->setEnabled(true);
 	isStop = true;
 	//buttonStopMainStream->setEnabled(false);
 	doLoopButtonMainStream->setEnabled(true);
@@ -347,6 +360,7 @@ void XRayViewer::setupNew(bool biplane) {
 	buttonLive->setEnabled(true);
 	radioButtonRecord->setChecked(false);
 	buttonLoadECGMainStream->setEnabled(true);
+	buttonLoadLUTMainStream->setEnabled(true);
 	isStop = true;
 	//buttonStopMainStream->setEnabled(false);
 	doLoopButtonMainStream->setEnabled(true);
@@ -369,6 +383,7 @@ void XRayViewer::setupNew(bool biplane) {
 	else {
 		// GUI - first reference
 		buttonLoadECG->setEnabled(true);
+		buttonLoadLUT->setEnabled(true);
 		ButtonLoadRunFirst->setEnabled(true);
 		buttonStop->setEnabled(false);
 		buttonPlay->setEnabled(false);
@@ -646,6 +661,154 @@ void XRayViewer::on_actionReconstructAll3dPoints_triggered()
 		label = QString("%1").arg(i + 1);
 		scene->getMarkerLabeling(2)->addPoint(qPrintable(label));
 	}
+}
+
+void XRayViewer::AddAngleMeasurementToView(bool checked, double angle, double distance)
+{
+	/*if (lineAngleWidget)
+	{
+		lineAngleWidget->SetEnabled(0);
+		lineAngleWidget = NULL;
+	}*/	
+
+	if (angleWidget)
+	{
+		angleWidget->SetEnabled(0);
+		angleWidget = NULL;
+	}
+	if (!checked)
+	{
+		scene->getXRAYRenderer(0)->RemoveActor2D(lineActorAngle12);
+		lineActorAngle12->Delete();
+		lineMapperAngle12->Delete();
+		lineAngle12->Delete();
+		scene->getXRAYRenderer(0)->RemoveActor2D(lineActorAngle13);
+		lineActorAngle13->Delete();
+		lineMapperAngle13->Delete();
+		lineAngle13->Delete();
+		scene->getXRAYRenderer(0)->RemoveActor2D(lineActorAngle23);
+		lineActorAngle23->Delete();
+		lineMapperAngle23->Delete();
+		lineAngle23->Delete();
+	}
+
+	double pos1[3] = { 0,0,0 };
+	scene->getMarkerLabeling(0)->getPointPosition(0, pos1);
+	double pos2[3] = { 0,0,0 };
+	scene->getMarkerLabeling(0)->getPointPosition(1, pos2);
+	double pos3[3] = { 0,0,0 };
+	scene->getMarkerLabeling(0)->getPointPosition(2, pos3);
+
+	double pos_z[1] = { 0.0 };
+	scene->returnDetectorPosition(0, pos_z);
+
+	// display the line between points 1 and 2
+	lineAngle12 = vtkLineSource::New();
+	lineAngle12->SetPoint1(pos2[0], pos2[1], pos_z[0]);
+	lineAngle12->SetPoint2(pos1[0], pos1[1], pos_z[0]);
+	lineMapperAngle12 = vtkPolyDataMapper::New();
+	lineMapperAngle12->SetInputConnection(lineAngle12->GetOutputPort());
+	lineActorAngle12 = vtkActor::New();
+	//lineActorAngle->SetPickable(false);
+	lineActorAngle12->SetMapper(lineMapperAngle12);
+	lineActorAngle12->GetProperty()->SetColor(0.0, 1.0, 0.0); // green
+	lineActorAngle12->GetProperty()->SetLineWidth(3);
+	// display the line between points 1 and 3
+	lineAngle13 = vtkLineSource::New();
+	lineAngle13->SetPoint1(pos1[0], pos1[1], pos_z[0]);
+	lineAngle13->SetPoint2(pos3[0], pos3[1], pos_z[0]);
+	lineMapperAngle13 = vtkPolyDataMapper::New();
+	lineMapperAngle13->SetInputConnection(lineAngle13->GetOutputPort());
+	lineActorAngle13 = vtkActor::New();
+	//lineActorAngle->SetPickable(false);
+	lineActorAngle13->SetMapper(lineMapperAngle13);
+	lineActorAngle13->GetProperty()->SetColor(0.0, 1.0, 0.0); // green
+	lineActorAngle13->GetProperty()->SetLineWidth(3);
+	// display the line between points 2 and 3
+	lineAngle23 = vtkLineSource::New();
+	lineAngle23->SetPoint1(pos2[0], pos2[1], pos_z[0]);
+	lineAngle23->SetPoint2(pos3[0], pos3[1], pos_z[0]);
+	lineMapperAngle23 = vtkPolyDataMapper::New();
+	lineMapperAngle23->SetInputConnection(lineAngle23->GetOutputPort());
+	lineActorAngle23 = vtkActor::New();
+	//lineActorAngle->SetPickable(false);
+	lineActorAngle23->SetMapper(lineMapperAngle23);
+	lineActorAngle23->GetProperty()->SetColor(1.0, 0.0, 0.0); // green
+	lineActorAngle23->GetProperty()->SetLineWidth(3);
+	if (checked)
+	{
+		scene->getXRAYRenderer(0)->AddActor(lineActorAngle12);
+		scene->getXRAYRenderer(0)->AddActor(lineActorAngle13);
+		scene->getXRAYRenderer(0)->AddActor(lineActorAngle23);
+	}	
+
+
+
+	// display the line between points 2 and 3
+	//lineAngleWidget = vtkLineWidget::New();
+
+	//lineAngleWidget->SetPoint1(pos2);
+	//lineAngleWidget->SetPoint2(pos3);
+	//lineAngleWidget->GetLineProperty()->SetColor(0.0, 1.0, 0.0);
+	//lineAngleWidget->GetLineProperty()->SetLineWidth(3);
+	///*vtkSmartPointer<vtkLineRepresentation> rep = vtkSmartPointer<vtkLineRepresentation>::New();
+	//lineAngleWidget->SetRepresentation(rep);
+	//rep->SetPoint1WorldPosition(pos2);
+	//rep->SetPoint2WorldPosition(pos3);*/
+	//lineAngleWidget->SetInteractor(vtkWidgetFirstStream->GetInteractor());
+
+	// display the calculated values
+	std::stringstream ss, alpha, sign;
+	//alpha << "\u03B1 = "; //alpha sign in UTF-8
+	alpha << "alpha = ";
+	ss << alpha.str();
+	ss << angle;
+	sign << "\302\260"; //degree sign in UTF-8
+	ss << sign.str();
+	ss << "\ndist = ";
+	ss << distance;
+	ss << "mm";
+	std::string strVal = ss.str();
+
+	vtkSmartPointer<vtkTextActor> angleActor = vtkSmartPointer<vtkTextActor>::New();
+	angleActor->SetInput(strVal.c_str());
+	angleActor->GetTextProperty()->SetColor(0.0, 1.0, 0.0);
+
+	angleWidget = vtkTextWidget::New();
+	angleWidget->SetInteractor(vtkWidgetFirstStream->GetInteractor());
+
+	vtkSmartPointer<vtkTextRepresentation> rep = vtkSmartPointer<vtkTextRepresentation>::New();
+	rep->GetPositionCoordinate()->SetValue(.15, .15);
+	rep->GetPosition2Coordinate()->SetValue(.7, .2);
+	angleWidget->SetRepresentation(rep);
+	angleWidget->SetTextActor(angleActor);
+
+	angleWidget->SetEnabled(checked);
+	//lineAngleWidget->SetEnabled(checked);
+	//lineActorAngle->SetVisibility(checked);
+	scene->renderRef(0);
+
+}
+
+void XRayViewer::on_actionCalculate_angle_toggled(bool checked)
+{
+	double p1[3] = { 0,0,0 };
+	scene->getMarkerLabeling(2)->getPointPosition(0, p1);
+	double p2[3] = { 0,0,0 };
+	scene->getMarkerLabeling(2)->getPointPosition(1, p2);
+	double p3[3] = { 0,0,0 };
+	scene->getMarkerLabeling(2)->getPointPosition(2, p3);
+	double angle = scene->getAngleABC(p1, p2, p3);
+	double distance = scene->getDistanceBC(p2, p3);
+	/*tetst 90degrees
+	double p1[3] = { 1, 0, 0 };
+	double p2[3] = { 0, 0, 0 };
+	double p3[3] = { 0, 0, 1 };
+	double angle = scene->getAngleABC(p2, p1, p3);*/
+
+
+	this->AddAngleMeasurementToView(checked, angle, distance);
+	
 }
 
 void XRayViewer::on_actionReconstruct3dPoint_triggered()
@@ -1183,6 +1346,7 @@ void XRayViewer::on_actionSelectXRaySequence_triggered()
 
 	scene->setMainXRAYInputToFile(fileString);
 	buttonLoadECGMainStream->setEnabled(true);
+	buttonLoadLUTMainStream->setEnabled(true);
 	
 	//buttonStopMainStream->click();
 	labelCurrentFrameMainStream->setText("1");
@@ -1191,6 +1355,7 @@ void XRayViewer::on_actionSelectXRaySequence_triggered()
 	labelNumberOfFramesMainStream->setText(QString("%1").arg(scene->getNumberOfFrames(2)));
 
 	clearTextActors(2);
+	clearECGChart(2);
 
 	double primAngle, secAngle;
 	scene->getDICOMAnglesToWindow(primAngle, secAngle);
@@ -1338,6 +1503,7 @@ void XRayViewer::activateGui(int framenumber, char* dir, int index)
 			buttonPlay->setEnabled(true);
 			buttonStop->setEnabled(false);
 			buttonLoadECG->setEnabled(false);
+			buttonLoadLUT->setEnabled(false);
 			sliderBufferedFrame->setEnabled(true);
 
 
@@ -1372,6 +1538,7 @@ void XRayViewer::activateGui(int framenumber, char* dir, int index)
 			buttonPlay->setEnabled(true);
 			sliderBufferedFrame->setEnabled(true);
 			buttonLoadECG->setEnabled(true);
+			buttonLoadLUT->setEnabled(true);
 			ButtonLoadRunFirst->setEnabled(true);
 
 			labelCurrentFrame->setText(QValue);
@@ -1398,6 +1565,7 @@ void XRayViewer::activateGui(int framenumber, char* dir, int index)
 		{
 			buttonPlayMainStream->setEnabled(true);
 			buttonLoadECGMainStream->setEnabled(true);
+			buttonLoadLUTMainStream->setEnabled(true);
 			sliderBufferedFrameMainStream->setEnabled(true);
 
 			streamPlayerMainStream->stop();
@@ -1531,6 +1699,7 @@ void XRayViewer::on_actionSelectXRayReferenceFirst_triggered()
 		buttonLive->setEnabled(true);
 		//if (isButtonPlayMainClickedFirst || isPause) buttonPlayMainStream->setEnabled(true);
 		buttonLoadECGMainStream->setEnabled(false);
+		buttonLoadLUTMainStream->setEnabled(false);
 		radioButtonRecord->setChecked(0);
 		scene->isRecording = 0;
 		sliderBufferedFrameMainStream->setEnabled(true);
@@ -1576,6 +1745,7 @@ void XRayViewer::on_actionSelectXRayReferenceFirst_triggered()
 
 	buttonStop->click();
 	buttonLoadECG->setEnabled(true);
+	buttonLoadLUT->setEnabled(true);
 
 	scene->setInputToFile(fileString,0);
 
@@ -1590,6 +1760,7 @@ void XRayViewer::on_actionSelectXRayReferenceFirst_triggered()
 
 	clearTextActors(0);
 	//clearTextActors(2);
+	clearECGChart(0);
 
 	double primAngle, secAngle;
 	scene->getDICOMAnglesToWindowRef(0, primAngle, secAngle);
@@ -1628,6 +1799,7 @@ void XRayViewer::on_actionSelectXRayReferenceSecond_triggered()
 		buttonLive->setEnabled(true);
 		//if (isButtonPlayMainClickedFirst || isPause) buttonPlayMainStream->setEnabled(true);
 		buttonLoadECGMainStream->setEnabled(false);
+		buttonLoadLUTMainStream->setEnabled(false);
 		radioButtonRecord->setChecked(0);
 		scene->isRecording = 0;
 		sliderBufferedFrameMainStream->setEnabled(true);
@@ -1686,6 +1858,7 @@ void XRayViewer::on_actionSelectXRayReferenceSecond_triggered()
 
 	clearTextActors(1);
 	//clearTextActors(2);
+	clearECGChart(1);
 
 	double primAngle, secAngle;
 	scene->getDICOMAnglesToWindowRef(1, primAngle, secAngle);
@@ -1719,6 +1892,30 @@ void XRayViewer::clearTextActors(int index)
 	}
 }
 
+void XRayViewer::clearECGChart(int index)
+{
+	scene->removeECGChart(index);
+	if (index == 0)
+	{
+		ECGLoad = false;
+		LUTLoad = false;
+		BreathLoad = false;
+	}
+	if (index == 1)
+	{
+		ECGLoadSecondStream = false;
+		LUTLoadSecondStream = false;
+		BreathLoadSecondStream = false;
+	}
+		
+	if (index == 2)
+	{
+		ECGLoadMainStream = false;
+		LUTLoadMainStream = false;
+		BreathLoadMainStream = false;
+	}
+		
+}
 
 void XRayViewer::enableMarkerMenu()
 {
@@ -1854,6 +2051,7 @@ void XRayViewer::on_buttonStop_clicked()
 		buttonStop->setEnabled(false);
 		buttonPlay->setEnabled(true);
 		buttonLoadECG->setEnabled(false);
+		buttonLoadLUT->setEnabled(false);
 		//buttonSaveImage->setEnabled(true);
 		sliderBufferedFrame->setEnabled(true);
 
@@ -1866,6 +2064,7 @@ void XRayViewer::on_buttonStop_clicked()
 		buttonStop->setEnabled(false);
 		buttonPlay->setEnabled(true);
 		buttonLoadECG->setEnabled(true);
+		buttonLoadLUT->setEnabled(true);
 		//buttonSaveImage->setEnabled(true);
 		sliderBufferedFrame->setEnabled(true);
 
@@ -1923,6 +2122,7 @@ void XRayViewer::stopMain()
 		buttonLive->setEnabled(true);
 		//if (isButtonPlayMainClickedFirst|| isPause) buttonPlayMainStream->setEnabled(true);
 		buttonLoadECGMainStream->setEnabled(false);
+		buttonLoadLUTMainStream->setEnabled(false);
 		radioButtonRecord->setChecked(0);
 		scene->isRecording = 0;
 		sliderBufferedFrameMainStream->setEnabled(true);
@@ -1933,6 +2133,7 @@ void XRayViewer::stopMain()
 	{
 		buttonPlayMainStream->setEnabled(true);
 		buttonLoadECGMainStream->setEnabled(true);
+		buttonLoadLUTMainStream->setEnabled(true);
 		//buttonSaveImageSecondStream->setEnabled(true);
 		sliderBufferedFrameMainStream->setEnabled(true);
 
@@ -2043,6 +2244,7 @@ void XRayViewer::on_sliderBufferedFrame_valueChanged(int value)
 		fileString = dirFirstReference; // implicit conversion
 										//scene->setGeometryFromFramegrabber(0, SID, sourcePatDist, primAngle, secAngle);
 		clearTextActors(0);
+		clearECGChart(0);
 		scene->playReferenceStream(value, (char*)fileString, 0);
 		scene->getDICOMAnglesToWindowRef(0, primAngle, secAngle);
 		displayAngleInWindow(0, primAngle, secAngle);
@@ -2053,6 +2255,15 @@ void XRayViewer::on_sliderBufferedFrame_valueChanged(int value)
 		if (ECGLoad)
 		{
 			scene->setECGFrame(0, (value));
+		}
+		if (LUTLoad)
+		{
+			scene->setLUTFrame(0, (value));
+		}
+
+		if (BreathLoad)
+		{
+			scene->setBreathFrame(0, (value));
 		}
 	}
 
@@ -2073,6 +2284,7 @@ void XRayViewer::on_sliderBufferedFrameSecondStream_valueChanged(int value)
 		const char* fileString;
 		fileString = dirSecondReference; // implicit conversion
 		clearTextActors(1);
+		clearECGChart(1);
 		scene->playReferenceStream(value, (char*)fileString, 1);	
 		scene->getDICOMAnglesToWindowRef(1, primAngle, secAngle);
 		displayAngleInWindow(1, primAngle, secAngle);
@@ -2084,6 +2296,14 @@ void XRayViewer::on_sliderBufferedFrameSecondStream_valueChanged(int value)
 		if (ECGLoadSecondStream)
 		{
 			scene->setECGFrame(1, (value));
+		}
+		if (LUTLoadSecondStream)
+		{
+			scene->setLUTFrame(1, (value));
+		}
+		if (BreathLoadSecondStream)
+		{
+			scene->setBreathFrame(1, (value));
 		}
 
 		int frameSecond, frame;
@@ -2142,6 +2362,7 @@ void XRayViewer::on_sliderBufferedFrameMainStream_valueChanged(int value)
 			scene->play(value, (char*)fileString);
 
 			clearTextActors(2);
+			clearECGChart(2);
 			double primAngle, secAngle;
 			scene->getDICOMAnglesToWindow(primAngle, secAngle);
 			displayAngleInWindow(2, primAngle, secAngle);
@@ -2157,6 +2378,7 @@ void XRayViewer::on_sliderBufferedFrameMainStream_valueChanged(int value)
 			//stopClock(start1);
 
 			clearTextActors(2);
+			clearECGChart(2);
 			double primAngle, secAngle;
 			scene->getDICOMAnglesToWindow(primAngle, secAngle);
 			displayAngleInWindow(2, primAngle, secAngle);
@@ -2203,6 +2425,7 @@ void XRayViewer::on_sliderBufferedFrameMainStream_valueChanged(int value)
 				strcpy(pathRef0, fileString);
 				strcat(pathRef0, ref0);
 				clearTextActors(0);
+				clearECGChart(0);
 				scene->playReferenceStream(value, (char*)pathRef0, 0);
 				scene->getDICOMAnglesToWindowRef(0, primAngle0, secAngle0);
 
@@ -2211,15 +2434,18 @@ void XRayViewer::on_sliderBufferedFrameMainStream_valueChanged(int value)
 				strcpy(pathRef1, fileString);
 				strcat(pathRef1, ref1);
 				clearTextActors(1);
+				clearECGChart(1);
 				scene->playReferenceStream(value, (char*)pathRef1, 1);
 				scene->getDICOMAnglesToWindowRef(1, primAngle1, secAngle1);
 			}
 			else { // recorded in monoplaneMode
 				clearTextActors(0);
+				clearECGChart(0);
 				scene->playReferenceStream(value, (char*)fileString, 0);
 				scene->getDICOMAnglesToWindowRef(0, primAngle0, secAngle0);
 
 				clearTextActors(1);
+				clearECGChart(1);
 				scene->playReferenceStream(value, (char*)fileString, 1);
 				scene->getDICOMAnglesToWindowRef(1, primAngle1, secAngle1);
 			
@@ -2239,11 +2465,13 @@ void XRayViewer::on_sliderBufferedFrameMainStream_valueChanged(int value)
 
 			scene->liveBiplane(0); // liveBiplane(0) muss vor liveBiplane(1) aufgerufen werden, wegen der Tischposition!!!
 			clearTextActors(0);
+			clearECGChart(0);
 			scene->getDICOMAnglesToWindowRef(0, primAngle[0], secAngle[0]);
 			displayAngleInWindow(0, primAngle[0], secAngle[0]);
 
 			scene->liveBiplane(1);
 			clearTextActors(1);
+			clearECGChart(1);
 			scene->getDICOMAnglesToWindowRef(1, primAngle[1], secAngle[1]);
 			displayAngleInWindow(1, primAngle[1], secAngle[1]);
 			//displayAngleInWindow(0, primAngle[0], secAngle[0]);
@@ -2262,9 +2490,19 @@ void XRayViewer::on_sliderBufferedFrameMainStream_valueChanged(int value)
 	else {
 	// kein Framegrabber	
 		scene->showFrame(2, (value - 1));
+		
+		if (BreathLoadMainStream)
+		{
+			scene->setBreathFrame(2, (value)); 
+		}
+			
 		if (ECGLoadMainStream)
 		{
 			scene->setECGFrame(2, (value));
+		}
+		if (LUTLoadMainStream)
+		{
+			scene->setLUTFrame(2, (value));
 		}
 		scene->renderMain();
 	}
@@ -2367,6 +2605,7 @@ void XRayViewer::on_actionLoad_Run_Biplane_triggered()
 	isStop = false;
 	//buttonStopMainStream->setEnabled(true);
 	buttonLoadECGMainStream->setEnabled(false);
+	buttonLoadLUTMainStream->setEnabled(false);
 	//buttonSaveImageSecondStream->setEnabled(false);
 	sliderBufferedFrameMainStream->setEnabled(false);
 
@@ -2429,6 +2668,7 @@ void XRayViewer::on_ButtonLoadRunFirst_clicked()
 	buttonPlay->setEnabled(false);
 	buttonStop->setEnabled(true);
 	buttonLoadECG->setEnabled(false);
+	buttonLoadLUT->setEnabled(false);
 	//buttonSaveImageSecondStream->setEnabled(false);
 	sliderBufferedFrame->setEnabled(false);
 
@@ -2537,6 +2777,7 @@ void XRayViewer::on_buttonPlay_clicked()
 		buttonPlay->setEnabled(false);
 		buttonStop->setEnabled(true);
 		buttonLoadECG->setEnabled(false);
+		buttonLoadLUT->setEnabled(false);
 		sliderBufferedFrame->setEnabled(false);
 
 		//// renew Geometry
@@ -2552,6 +2793,7 @@ void XRayViewer::on_buttonPlay_clicked()
 		buttonPlay->setEnabled(false);
 		buttonStop->setEnabled(true);
 		buttonLoadECG->setEnabled(false);
+		buttonLoadLUT->setEnabled(false);
 		//buttonSaveImage->setEnabled(true);
 		sliderBufferedFrame->setEnabled(false);
 
@@ -2632,6 +2874,7 @@ void XRayViewer::on_buttonPlayMainStream_clicked()
 		isPause = true;
 		//buttonStopMainStream->setEnabled(true);
 		buttonLoadECGMainStream->setEnabled(false);
+		buttonLoadLUTMainStream->setEnabled(false);
 		//buttonSaveImageSecondStream->setEnabled(false);
 		sliderBufferedFrameMainStream->setEnabled(false);
 	
@@ -2658,6 +2901,7 @@ void XRayViewer::on_buttonPlayMainStream_clicked()
 		isStop = false;
 		//buttonStopMainStream->setEnabled(true);
 		buttonLoadECGMainStream->setEnabled(false);
+		buttonLoadLUTMainStream->setEnabled(false);
 		sliderBufferedFrameMainStream->setEnabled(false);
 
 		streamPlayerMainStream->start(1000/13);
@@ -2745,6 +2989,7 @@ void XRayViewer::on_buttonLive_clicked()
 	scene->isLive = 1;
 	buttonLive->setEnabled(false);
 	buttonLoadECGMainStream->setEnabled(false);
+	buttonLoadLUTMainStream->setEnabled(false);
 	isPause = false;
 	isStop = false;
 	//buttonStopMainStream->setEnabled(true);
@@ -2831,6 +3076,69 @@ void XRayViewer::on_radioButtonRecord_clicked()
 
 }
 
+void XRayViewer::on_buttonLoadLUTMainStream_clicked()
+{
+	if (disableUpdatesMainStream) return;
+
+	QString path = QFileDialog::getOpenFileName(this, "Select LUT file for the second XRAY reference", lastDirectory, "LUT file (*.csv)");
+	if (path.isNull()) return;
+
+	QByteArray file;
+	file.push_back(qPrintable(path));
+
+	int pos = file.lastIndexOf('/');
+	lastDirectory = file.left(pos);
+
+	const char* fileString;
+	fileString = file; // implicit conversion
+
+	scene->loadLUTFile(2, fileString, sliderBufferedFrameMainStream->value());
+
+	LUTLoadMainStream = true;
+}
+
+void XRayViewer::on_buttonLoadLUTSecondStream_clicked()
+{
+	if (disableUpdates) return;
+
+	QString path = QFileDialog::getOpenFileName(this, "Select LUT file for the second XRAY reference", lastDirectory, "LUT file (*.csv)");
+	if (path.isNull()) return;
+
+	QByteArray file;
+	file.push_back(qPrintable(path));
+
+	int pos = file.lastIndexOf('/');
+	lastDirectory = file.left(pos);
+
+	const char* fileString;
+	fileString = file; // implicit conversion
+
+	scene->loadLUTFile(1, fileString, sliderBufferedFrameSecondStream->value());
+
+	LUTLoadSecondStream = true;
+}
+
+
+void XRayViewer::on_buttonLoadLUT_clicked()
+{
+	if (disableUpdates) return;
+
+	QString path = QFileDialog::getOpenFileName(this, "Select LUT file for the first XRAY reference", lastDirectory, "LUT file (*.csv)");
+	if (path.isNull()) return;
+
+	QByteArray file;
+	file.push_back(qPrintable(path));
+
+	int pos = file.lastIndexOf('/');
+	lastDirectory = file.left(pos);
+
+	const char* fileString;
+	fileString = file; // implicit conversion
+
+	scene->loadLUTFile(0, fileString, sliderBufferedFrame->value());
+
+	LUTLoad = true;
+}
 
 void XRayViewer::on_buttonLoadECG_clicked()
 {
@@ -2921,6 +3229,73 @@ void XRayViewer::on_buttonLoadECGMainStream_clicked()
 
 }
 
+void XRayViewer::on_buttonLoadBreath_clicked()
+{
+	if (disableUpdates) return;
+
+	QString path = QFileDialog::getOpenFileName(this, "Select breathing curve file for the actual XRAY run", lastDirectory, "Breath Text file (*.txt)");
+	if (path.isNull()) return;
+
+	QByteArray file;
+	file.push_back(qPrintable(path));
+
+	int pos = file.lastIndexOf('/');
+	lastDirectory = file.left(pos);
+
+	const char* fileString;
+	fileString = file; // implicit conversion
+
+	scene->loadBreathFile(0, fileString, sliderBufferedFrame->value());
+
+	BreathLoad = true;
+
+}
+
+void XRayViewer::on_buttonLoadBreathSecondStream_clicked()
+{
+	if (disableUpdates) return;
+
+	QString path = QFileDialog::getOpenFileName(this, "Select breathing curve file for the actual XRAY run", lastDirectory, "Breath Text file (*.txt)");
+	if (path.isNull()) return;
+
+	QByteArray file;
+	file.push_back(qPrintable(path));
+
+	int pos = file.lastIndexOf('/');
+	lastDirectory = file.left(pos);
+
+	const char* fileString;
+	fileString = file; // implicit conversion
+
+	scene->loadBreathFile(1, fileString, sliderBufferedFrameSecondStream->value());
+
+	BreathLoadSecondStream = true;
+
+}
+
+
+void XRayViewer::on_buttonLoadBreathMainStream_clicked()
+{
+	if (disableUpdatesMainStream) return;
+
+	QString path = QFileDialog::getOpenFileName(this, "Select breathing curve file for the actual XRAY run", lastDirectory, "Breath Text file (*.txt)");
+	if (path.isNull()) return;
+
+	QByteArray file;
+	file.push_back(qPrintable(path));
+
+	int pos = file.lastIndexOf('/');
+	lastDirectory = file.left(pos);
+
+	const char* fileString;
+	fileString = file; // implicit conversion
+
+	scene->loadBreathFile(2, fileString, sliderBufferedFrameMainStream->value());
+
+	BreathLoadMainStream = true;
+
+}
+
 
 void XRayViewer::on_actionMeasureDistance_toggled(bool checked)
 {
@@ -2940,19 +3315,28 @@ void XRayViewer::AddDistanceMeasurementToView(bool checked)
 	
 	/* Line widget*/
 	lineWidget = vtkLineWidget2::New();
-	lineWidget->SetInteractor(vtkWidgetMainStream->GetInteractor());
+	lineWidget->SetInteractor(vtkWidgetFirstStream->GetInteractor());
 
 	/* Create the representation*/
 	vtkSmartPointer<vtkLineRepresentation> rep =
 		vtkSmartPointer<vtkLineRepresentation>::New();
 	lineWidget->SetRepresentation(rep);
 
+	
+	double pos_z[1] = { 0.0 };
+	scene->returnDetectorPosition(0, pos_z);
+	double pos1[3] = { 0,0,pos_z[0]-1 }; //pos_z[0]-1, otherwise line is displayed overlayed with the image and annotation is not seen
+	double pos2[3] = { 20,0,pos_z[0]-1 };
+
+	static_cast<vtkLineRepresentation*>(lineWidget->GetRepresentation())->SetPoint1WorldPosition(pos1);
+	static_cast<vtkLineRepresentation*>(lineWidget->GetRepresentation())->SetPoint2WorldPosition(pos2);
 	static_cast<vtkLineRepresentation*>(lineWidget->GetRepresentation())->DistanceAnnotationVisibilityOn();
 	static_cast<vtkLineRepresentation*>(lineWidget->GetRepresentation())->SetDistanceAnnotationFormat("%-#6.3g mm");
 	static_cast<vtkLineRepresentation*>(lineWidget->GetRepresentation())->SetDistanceAnnotationScale(10, 10, 10);
 	
-	vtkWidgetMainStream->GetInteractor()->Start();
+	vtkWidgetFirstStream->GetInteractor()->Start();
 	lineWidget->SetEnabled(checked);
+	scene->renderRef(0);
 
 }
 

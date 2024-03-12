@@ -2,6 +2,7 @@
 
 #include "OverlayScene.h"
 
+
 #include <QStringList>
 #include <QFileDialog>
 #include <QColorDialog>
@@ -24,6 +25,7 @@ MeshesDialog::MeshesDialog(QWidget *parent, OverlayScene* scene)
 	updateList();
 
 	addMeshButton->setEnabled(false);
+	loadDelaunayButton->setEnabled(false);
 
 
 }
@@ -34,6 +36,11 @@ void MeshesDialog::activateAddMeshButton(bool activate)
 
 }
 
+void MeshesDialog::activateLoadDelaunayButton(bool activate)
+{
+	loadDelaunayButton->setEnabled(activate);
+
+}
 MeshesDialog::~MeshesDialog()
 {
    
@@ -44,6 +51,24 @@ void MeshesDialog::update()
 	updateList();
 }
 
+void MeshesDialog::on_loadDelaunayButton_clicked()
+{
+	QString fileFormats({ "Mesh File(*.vtk)" });
+	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select mesh files", lastDirectory, fileFormats);
+	if (fileNames.empty()) return; // user cancelled	
+
+	QStringList files = fileNames;	// one should iterate over a copy of the returned list, according to Qt's docu!
+	for (QStringList::Iterator file = files.begin(); file != files.end(); ++file)
+	{
+		scene->addDelaunayMesh(file->toLocal8Bit().constData());
+	}
+
+	int pos = files.front().lastIndexOf('/');
+	lastDirectory = files.front().left(pos);
+
+	updateList();
+	
+}
 
 void MeshesDialog::on_addMeshButton_clicked()
 {
@@ -63,7 +88,7 @@ void MeshesDialog::on_addMeshButton_clicked()
 	updateList();
 
 	//// ensure that visibility for added meshes is according to checkbox
-	scene->setMeshVisibility(!hideMeshesCheckBox->isChecked());
+	//scene->setMeshVisibility(!hideMeshesCheckBox->isChecked());
 	
 }
 
